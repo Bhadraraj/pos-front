@@ -1,0 +1,131 @@
+:root {
+  /* --primary-clr: #EE791C; */
+  --secondary-clr: #0C2640;
+  --light-grey: #8596A6;
+  --dark-green: #009C22;
+
+
+  --heading-color: #233876;
+  --card-bg: #F5FAF7;
+  --input-bg: #F2F0F9;
+  --button-bg: #2C2A38;
+  --light-white: #FDFCFD;
+  --black-clr: #000208;
+  --faded-color: #F6F6F6;
+  --grey-color: #6B7280;
+
+}
+
+
+.pagination {
+  margin-top: 20px;
+}
+
+.status-badge {
+
+  font-size: 13px;
+  padding: 3px 5px;
+  border-radius: 10px;
+  width: 80px;
+  text-align: center;
+  font-weight: 500;
+}
+
+
+.status-badge.completed {
+  color: #36a300;
+  ;
+
+  border: 1px solid #36a300;
+}
+
+
+.status-badge.pending {
+  color: #ff000d;
+  ;
+  border: 1px solid #ff000d;
+}
+
+
+.status-badge.preparing {
+
+  color: #722ed1;
+  ;
+  border: 1px solid #722ed1;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+
+
+td,
+th {
+  padding: 15px !important;
+}
+
+.pagination .btn-outline-secondary {
+  /* border:1px solid var(--button-bg)   !important; */
+  border: 1px solid var(--primary-clr) !important;
+
+}
+
+.pagination .btn-primary {
+  /* background-color:var(--button-bg)  !important; */
+  background-color: var(--primary-clr) !important;
+  border: none;
+
+}
+
+
+.pagination .btn:hover {
+  /* color: var(--bs-btn-hover-color); */
+  background-color: var(--primary-clr) !important;
+  /* background-color: var(--button-bg) !important; */
+  border-color: none;
+
+}
+
+
+.ant-dropdown-trigger {
+  color: var(--primary-clr);
+  font-weight: 500;
+  border: 1px solid var(--primary-clr);
+  border-radius: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.table-responsive {
+  box-shadow: 0.4px 0.4px 10px #e8e8e8;
+}
+
+
+.ant-tabs-tab {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--secondary-clr) !important;
+}
+
+:where(.css-dev-only-do-not-override-qnu6hi).ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--primary-clr);
+  text-shadow: 0 0 0.25px currentcolor;
+}
+
+/* Customize the color of the active tab's underline (active bar) */
+.ant-tabs-ink-bar {
+  background-color: var(--primary-clr) !important;
+  /* Set the active bar color */
+}
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--primary-clr) !important;
+  /* Customize active tab text color */
+}

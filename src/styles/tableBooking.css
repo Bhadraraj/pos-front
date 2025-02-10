@@ -1,0 +1,70 @@
+ .booking-card.available {
+     background-color: #dbffe3;
+     background-color: #e6e5a7;
+    
+ }
+
+ .booking-card.booked {
+     background-color: #ffe2e4;
+ 
+ }
+
+ .booking-card h3 {
+     margin: 10px 0;
+     font-size: 18px;
+     color: black;
+ }
+
+ .booking-card p {
+     margin: 10px 0;
+     font-size: 16px;
+ }
+
+ .booking-card {
+     padding: 20px 0px !important;
+     border-radius: 10px;
+     text-align: center;
+     transition: 1s;
+
+
+ }
+
+ .booking-card.available button {
+     /* background-color: #218838; */
+     background-color: #3e3d00;
+ }
+
+ .booking-card.booked button {
+     background-color: #c82333;
+ }
+
+ /* .booking-card:hover {
+     transform: translateY(-10px);
+ } */
+
+ .booking-card button {
+     padding: 5px 10px;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+     font-size: 13px;
+     transition: background-color 0.1s;
+     color: white;
+ }
+
+
+ .table-summary .avaliableCircle {
+     height: 10px;
+     width: 10px;
+     background-color: #3e3d00;
+     display: inline-block;
+     border-radius: 50%;
+ }
+
+ .table-summary .bookedCircle {
+     height: 10px;
+     width: 10px;
+     background-color: #c82333;
+     display: inline-block;
+     border-radius: 50%;
+ }

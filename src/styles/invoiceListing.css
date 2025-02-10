@@ -1,0 +1,4 @@
+.invoiceListingTable td, .table th {
+    white-space: nowrap !important; 
+  }
+  

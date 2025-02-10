@@ -1,0 +1,147 @@
+/* .cartaddBtn,
+.cartRemoveBtn {
+  background-color: var(--primary-clr);
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--light-white);
+}
+ */
+
+
+.cartCardMainOuter {
+  padding: 10px;
+  margin-right: 0cqb20px;
+  border: 1px solid var(--light-grey);
+  border-radius: 10px;
+
+}
+
+.cartAmountSection {
+  margin-top: 20px;
+  font-weight: 500;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.cartItemAmount {
+  font-size: 14px;
+}
+
+.cartSubTotalAmount {
+  color: var(--dark-green);
+}
+
+.placeOrderBtn {
+  padding: 5px;
+  background-color: var(--dark-green);
+  color: var(--light-white);
+  border: none;
+  border-radius: 10px;
+  width: 100%;
+
+}
+
+
+
+.cartScrollContainer {
+  max-height: 400px;
+  /* Example height for the scroll container */
+  overflow-y: auto;
+  /* Enables vertical scrolling if content overflows */
+}
+
+/* Customize the scrollbar width */
+.cartScrollContainer::-webkit-scrollbar {
+  width: 8px;
+  /* Decrease the width of the vertical scrollbar */
+}
+
+/* Customize the track of the scrollbar */
+.cartScrollContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  /* Track color */
+}
+
+/* Customize the handle (thumb) of the scrollbar */
+.cartScrollContainer::-webkit-scrollbar-thumb {
+  background: #888;
+  /* Handle color */
+  border-radius: 10px;
+  /* Optional: rounded corners */
+  min-height: 2px;
+  /* This ensures the thumb is at least 2px high */
+}
+
+/* Handle on hover */
+.cartScrollContainer::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  /* Darker color on hover */
+}
+
+/* For Firefox */
+
+
+
+.addRemoBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 0.5px solid var(--light-grey);
+  border-radius: 10px;
+  background-color:#f2f2f2;
+}
+
+.addRemoBtn button {
+
+  padding: 5px;
+  border: none;
+background: none;
+  color:black;
+  font-weight: 600;
+
+}
+.addRemoBtn span{
+  padding: 5px;
+  width: 100%;
+  margin: 0px !important;
+  background-color: white;
+  color: var(--primary-clr);
+}
+
+.discountIp{
+  border: 1px solid var(--primary-clr);
+  outline: none;
+  border-radius: 10px;
+  padding: 1px 5px;
+
+
+}
+
+.cartAmountSection input{
+width: 80px;
+/* border: none; */
+}
+/* .input-group .input-group-text{
+  font-size: 10px;
+} 
+.input-group{
+  font-size: 10px;
+}  */
+
+.goToCart a{
+  color: var(--secondary-clr);
+  
+
+}
+.menuCardOuter .addRemoBtn{
+  background-color: var(--primary-clr);
+  padding: 0px;
+  border: none;
+}
+.menuCardOuter .addRemoBtn button{
+color: white;
+
+}

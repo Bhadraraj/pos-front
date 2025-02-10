@@ -1,0 +1,71 @@
+/* LOGIN SECTION STYLES STARTS HERE  */
+
+
+
+.loginSection {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+
+}
+
+.loginSection h1 {
+  color: var(--secondary-clr);
+  font-family: "Barlow", system-ui;
+  font-weight: 700;
+
+}
+
+
+
+.loginBtn {
+  background-color: var(--primary-clr);
+  color: var(--light-white);
+  border: none;
+  padding: 6px 40px;
+  border-radius: 8px;
+  font-weight: 700;
+  width: 100%;
+}
+
+
+
+.loginSecImg {
+
+  animation: loginImageAnimation;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+
+}
+
+
+
+@keyframes loginImageAnimation {
+  from {
+    transform: translateY(0px);
+  }
+
+  to {
+    transform: translateY(-20px);
+  }
+
+
+}
+
+
+
+
+/* MEDIA QUERIES  */
+
+@media only screen and (max-width:768px) {
+  .loginSecImg {
+    width: 70%;
+  }
+}
+
+
+/* LOGIN SECTION STYLES ENDS HERE  */

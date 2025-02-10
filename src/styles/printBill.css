@@ -1,0 +1,71 @@
+#bill-content th {
+
+
+  padding: 0px !important;
+  margin: 0px !important;
+}
+
+#bill-content td {
+
+  padding: 0px !important;
+  margin: 0px !important;
+}
+
+#bill-content tr {
+  border: 0.5px solid white !important;
+  padding: 0px !important;
+  margin: 5px 0px !important;
+}
+
+/* ... other styles */
+
+hr{
+  margin: 0px;
+}
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  #bill-content {
+    width: 80mm;
+    /* Crucial for consistent sizing */
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    box-sizing: border-box;
+    /* Prevents padding from affecting width */
+  }
+
+  /* Target tables and cells specifically */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    /* Collapse borders for a cleaner look */
+  }
+
+  th,
+  td {
+    padding: 2px;
+    /* Add some padding to table cells */
+    text-align: left;
+    /* Default text alignment */
+  }
+
+  /* Use utility classes for alignment */
+  .text-end {
+    text-align: right;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  /* Add more specific styles as needed */
+  .lineDiv {
+    border-top: 1px dotted red;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}

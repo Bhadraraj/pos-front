@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Stylish&display=swap');
+
+.salesCardMain {
+    display: flex;
+    justify-content: space-evenly;
+
+}
+
+.saleCard {
+    border-radius: 20px;
+    padding: 20px;
+    /* background-color: #FFE2E5;  */
+    background-color: #ffecee;
+    transition: 1s;
+}
+
+
+.saleCard:hover {
+    transform: translateY(-10px);
+
+}
+
+.saleCard.orange {
+
+    background-color: #FFF4DE;
+}
+
+.saleCard.orange .salesIcon {
+
+    background-color: #FF947A;
+}
+
+.saleCard.yellow .salesIcon {
+
+    background-color: #ac9c00;
+}
+
+.saleCard.yellow {
+
+    background-color: #f3ffca;
+}
+
+.saleCard.green {
+
+    background-color: #DCFCE7;
+}
+
+.saleCard.green .salesIcon {
+
+    background-color: #3CD856;
+}
+.saleCard.blue {
+
+    background-color: #DCFCE7;
+}
+
+.saleCard.green .salesIcon {
+
+    background-color: #3CD856;
+}
+
+.saleCard.purple {
+
+    background-color: #F3E8FF;
+}
+
+.saleCard.purple .salesIcon {
+
+    background-color: #A34CFF;
+}
+
+.salesIcon {
+    /* background-color: #f93660; */
+    background-color: #ff4b71;
+    padding: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.salesIcon svg {
+    font-size: 25px;
+    color: white;
+}
+
+.totalAmount {
+    color: #151D48;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.totolSaleText {
+    color: grey;
+}
+
+.percentageSale {
+    color: blue;
+}
+
+.salesCardMain h5 {
+    color: #151D48;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.salesCardMain h1 {
+    font-size: 50px;
+    color: #5d161a;
+    font-family: "Dancing Script", serif;
+    font-weight: bold;
+}
+
+.salesCardMain .shopName {
+    font-size: 75px;
+    color: #5d161a;
+    font-family: "Dancing Script", serif;
+
+    font-weight: bold;
+}
+
+.dashboardIntroCont {
+    font-family: "Stylish", serif;
+    margin-top: 57px !important;
+    font-size: 18px;
+    /* color: #af454e; */
+    /* color: #e1530a; */
+    line-height: 35px;
+}
+
+.dashboardIntroImg {
+
+    animation-name: cakeAnime;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+    animation-direction: alternate;
+}
+
+@keyframes cakeAnime {
+    from {
+        transform: translateY(-10px);
+    }
+
+    to {
+        transform: translateY(0px);
+    }
+
+}
+
+.introSlogan {
+    color: #6e1a20;
+    font-size: 17px;
+    font-weight: 500;
+    /* font-family: "Dancing Script", serif; */
+}
+
+.ant-layout-sider-children {}

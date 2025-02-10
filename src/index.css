@@ -1,0 +1,416 @@
+/* Barlow GOOGLE FONT */
+
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* Barlow GOOGLE FONT */
+
+:root {
+  /* --primary-clr:#fe4841; */
+  /* --primary-clr: #EE791C; */
+  /* --primary-clr: #61119b; */
+  /* --primary-clr: #11425c; */
+  --primary-clr: #2a790a;
+  /* --primary-clr: #be3526; */
+  --secondary-clr: #0C2640;
+  --light-grey: #8596A6;
+  --dark-green: rgb(20 135 63);
+  ;
+
+
+  --heading-color: #233876;
+  --card-bg: #F5FAF7;
+  --input-bg: #F2F0F9;
+  --button-bg: #2C2A38;
+  --light-white: #FDFCFD;
+  --black-clr: #000208;
+  --faded-color: #F6F6F6;
+  --grey-color: #6B7280;
+
+}
+
+
+* {
+  font-family: "Barlow", system-ui;
+
+
+}
+
+h1 {
+  font-size: 54px;
+  font-weight: 700;
+  font-family: var(--secondary-clr);
+}
+
+h2 {
+  font-size: 28px !important;
+  font-weight: 600 !important;
+  font-family: var(--secondary-clr);
+
+}
+
+/* h1, h2 {
+  font-family: var(--secondary-clr);
+} */
+
+
+
+
+
+/* LOGIN SECTION STYLES ENDS HERE  */
+
+
+
+/* LOGIN LOGOUT POP UP MESSAGE */
+
+.ant-notification {
+  transition: transform 0.5s ease-in-out;
+  transform: translateY(-20px);
+  /* Adjust the value to control how far it moves */
+}
+
+.ant-notification {
+  transition: opacity 0.5s ease-in-out;
+}
+
+.ant-notification-notice {
+  opacity: 1;
+  /* Start fully visible */
+}
+
+.ant-notification-notice-leaving {
+  opacity: 0;
+  /* Fade out */
+}
+
+
+
+/* LOGIN LOGOUT POP UP MESSAGE */
+
+
+
+
+
+/* TOP BAR STARTS HERE  */
+.logo img {
+  height: 80PX;
+}
+
+.headerSection {
+  padding: 10px 0 !important;
+  box-shadow: 0.2px 0.2px 10px rgb(212, 212, 212);
+  /* Adjust as needed */
+}
+
+.navBar {
+  display: flex;
+  align-items: center;
+  /* Ensure vertical alignment */
+  justify-content: space-between;
+  /* Space between items */
+}
+
+
+.logoSec h3 {
+  margin: 0;
+  /* Remove default margin */
+}
+
+.mainSearch {
+  height: 38px;
+  /* Adjust height for better alignment */
+  padding: 5px;
+  /* Adjust padding for aesthetics */
+}
+
+.notificationIconTop {
+  display: flex;
+  align-items: center;
+  /* Align notification icon vertically */
+}
+
+.notificationIconTop svg {
+  font-size: 25px;
+  color: var(--primary-clr);
+}
+
+.toggleNavIcon {
+  display: flex;
+  align-items: center;
+  /* Align toggle button vertically */
+}
+
+.logoutComp {
+  display: flex;
+  align-items: center;
+  /* Align logout button vertically */
+}
+
+
+
+
+/* NAVBAR STYLES */
+
+
+
+
+.headerSection .form-control:focus {
+  background: none;
+}
+
+.input-group-text svg {
+  cursor: pointer;
+}
+
+.headerSection input {
+  background: none;
+}
+
+.headerSection .input-group-text {
+  background: none !important;
+
+}
+
+
+.navBar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+
+.logoSec a {
+  color: var(--heading-color);
+  text-decoration: none;
+}
+
+
+.navBartoggleBtn {
+
+  padding: 0px;
+  margin: 0px;
+  cursor: pointer;
+  position: relative;
+
+}
+
+.navBartoggleBtn svg {
+
+
+  font-size: 25px;
+  font-weight: 900;
+  color: var(--primary-clr);
+  background: none;
+
+  padding: 0px;
+  margin: 0px;
+  cursor: pointer;
+  position: relative;
+}
+
+
+.cartSectionRight svg {
+  font-size: 30px;
+  position: relative;
+  top: -4px;
+}
+
+.navBartoggleBtnRight svg {
+  border: none;
+  background-color: none !important;
+}
+
+
+.notificationIconTop,
+.toggleNavIcon,
+.logoutComp {
+  display: flex;
+  align-items: center;
+}
+
+
+
+.navBar input {
+  width: 500px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  padding: 4px 20px;
+}
+
+.toggleNavIcon {
+  font-size: 30px;
+  color: var(--primary-clr);
+}
+
+.cardItemName {
+  color: var(--secondary-clr);
+  font-size: 16px;
+  font-weight: 600;
+
+}
+
+.cardItemPrice {
+  color: var(--primary-clr);
+}
+
+
+
+/* ADD TO CART ENDS HERE */
+
+
+
+
+/* DASHBOARD STARTS HERE  */
+
+
+.dashBoardMain {
+  display: flex;
+}
+
+.dashBoardLeft {
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.dashboardRight {
+  padding: 10px;
+  padding-right: 0px;
+  flex-grow: 1;
+  /* Takes up the remaining space */
+}
+
+
+/* DASHBOARD ENDS  HERE  */
+
+
+
+@media only screen and (max-width:768px) {
+  h1 {
+    font-size: 42px;
+    /* font-weight: 700; */
+  }
+
+  h2 {
+    font-size: 23px !important;
+    font-weight: 600 !important;
+  }
+
+  .dashboardRight {
+    padding: 5px 0px 0px 5px;
+  }
+
+  .menuCardOuter {
+    width: 250PX;
+  }
+}
+
+.logo h6 {
+  color: var(--primary-clr);
+  font-weight: 600;
+  font-size: 24px;
+  margin: 0px !important;
+  margin-right: 20px !important;
+}
+
+/* MENU LISTING COMPONENT */
+.menuItemPrice {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.menuSection .addRemoBtn {
+  border: 2px solid var(--primary-clr) !important;
+}
+
+
+.applyCoupon .form-control {
+  border: none !important;
+}
+
+.custom-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 8 8%22 fill=%22none%22%3E%3Cpath fill=%22%23AAA%22 d=%22M2 2l3 3 3-3%22/%3E%3C/svg%3E') no-repeat right 0.7rem center;
+  padding: 5px 10px;
+
+}
+
+
+.ant-select-selector {
+  border: 1px solid var(--primary-clr) !important;
+}
+
+.view-button{
+  font-size: 25px;
+  cursor: pointer;
+}
+.edit-button {
+  color: #28a745;
+font-size: 25px;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deleteOrder svg{
+  background-color: white;
+  color: red; font-size: 30px;
+  
+}
+.deleteOrder {
+  border: 1px solid red;
+  padding: 5px;
+  border-radius: 10px;
+  /* background-color: white; */
+  /* color: red; font-size: 30px; */
+  
+}
+#cardNumberIp{
+  border: none !important;
+  outline: none !important;
+}
+/* .overAllOrderListing td{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
+
+.edit-button:hover {
+  color: #218838;
+}
+
+.delete-button {
+  color: #dc3545;
+  font-size: 25px;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  color: #c82333;
+}
+
+.print-button {
+  color: #2e00b3;
+  font-size: 25px;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dashboardRight{
+  overflow-x:hidden ;
+}
+
+/* @media only screen and (max-width: 500px) {
+  .dashboardRight {
+    padding: 100px 30px 30px 60px !important;
+  }
+} */

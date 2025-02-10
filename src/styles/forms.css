@@ -1,0 +1,89 @@
+/* FORMS STYLE STARTS HERE */
+
+.form-control, .form-select  {
+
+    border-radius: 8px !important;
+
+    background-color: white;
+    border: 1px solid var(--primary-clr) !important;
+
+}
+
+.input-group-text {
+    /* border-radius: 20px 0px 0px 20px !important; */
+    background-color: white !important;
+    /* border: none !important; */
+    color: var(--primary-clr) !important;
+
+}
+.form-control:disabled {
+    background-color: white !important;
+}
+
+.form-select {
+    border: 1px solid var(--primary-clr);
+}
+
+.input-group {
+    /* border: none; */
+    border: 1px solid var(--primary-clr);
+    border-radius: 8px;
+    outline: none;
+    width: 100%;
+}
+
+
+.form-control {
+    font-size: 10px;
+
+    /* border: none !important; */
+}
+
+.form-control:focus {
+    box-shadow: none !important;
+}
+
+small {
+    font-size: 12px;
+}
+
+.forgotPwd {
+    color: var(--primary-clr);
+    font-weight: 500;
+
+}
+
+.input-group-text {
+    background: none !important;
+}
+
+
+.custom-select {
+    border: 1px solid var(--primary-clr) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.3s ease !important;
+
+}
+
+.custom-select:focus {
+    border-color: var(--primary-clr) !important;
+    box-shadow: none !important;
+    outline: none !important;
+
+}
+
+.custom-select option {
+    padding: 8px;
+}
+
+
+.mostSellingProduct .custom-select {
+    padding: 2px;
+    border-radius: 2px;
+    border-color: black !important;
+}
+.btn-primary {
+    background-color: var(--primary-clr)  !important;
+    border: none !important;
+}

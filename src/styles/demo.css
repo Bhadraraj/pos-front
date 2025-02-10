@@ -1,0 +1,57 @@
+/* customerList.css */
+
+.responsive-table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid #ddd;
+  }
+  
+  .table-row {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .table-header {
+    background-color: #f8f9fa;
+    font-weight: bold;
+  }
+  
+  .table-cell {
+    flex: 1;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .table-cell[data-label]::before {
+    content: attr(data-label);
+    font-weight: bold;
+    margin-right: 10px;
+    display: none;
+  }
+  
+  @media (max-width: 768px) {
+    .table-row {
+      flex-direction: column;
+      border-bottom: none;
+    }
+  
+    .table-cell {
+      padding: 10px;
+      text-align: right;
+      position: relative;
+      border-bottom: 1px solid #ddd;
+    }
+  
+    .table-cell[data-label]::before {
+      display: inline-block;
+      text-align: left;
+      width: 100px;
+    }
+  
+    .table-header {
+      display: none;
+    }
+  }
+  

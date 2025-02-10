@@ -1,0 +1,216 @@
+/* MENU SECTION SETCION STARTS HERE */
+
+.rating-container {
+    display: flex;
+    align-items: center;
+    /* Ensures vertical alignment */
+    margin: 0;
+}
+
+
+
+.rating-value {
+    font-size: 16px;
+    /* Adjust font size to match your design */
+    display: flex;
+    align-items: center;
+}
+
+.foodCatgoryImg img {
+    width: 100%;
+    /* Ensures the image takes up full width */
+    height: 150px;
+    /* Set a fixed height for all images */
+    object-fit: cover;
+    /* Ensures the image covers the area while maintaining the aspect ratio */
+}
+
+
+
+.cartSectionRight .ant-btn {
+    background-color: none;
+    border: none !important;
+}
+
+.cartTopSec {
+    position: sticky;
+    /* Keep the top section fixed */
+    top: 0;
+    z-index: 10;
+    /* Ensure it stays above the scrollable content */
+    background-color: var(--light-white);
+    /* Match the background */
+    padding-bottom: 10px;
+}
+
+.cartScrollContainer {
+    scrollbar-width: thin;
+    /* Thin scrollbar for Firefox */
+    scrollbar-color: #cfcfcf #f1f1f1;
+
+    padding: 10px;
+    /* flex-grow: 1; Fill the remaining space */
+    max-height: 350px;
+    /* Adjust based on top and bottom sections */
+    overflow-y: scroll;
+    /* Scrollable content */
+    overflow-x: hidden !important;
+    margin-bottom: 20px;
+
+    /* Custom Scrollbar Styling */
+    scrollbar-width: thin;
+    /* For Firefox */
+    scrollbar-color: rgb(226, 226, 226) transparent;
+
+    scrollbar-width: thin;
+
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+.cartScrollContainer::-webkit-scrollbar {
+    display: none;
+    /* Completely hide the scrollbar */
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+.cartScrollContainer::-webkit-scrollbar {
+    width: 2px;
+    /* Set scrollbar width */
+    height: 100px;
+    /* Set scrollbar height */
+}
+
+
+.navBarTopCartMain {
+    position: fixed;
+    width: 100%;
+    background-color: white;
+    z-index: 1000;
+    top: 0px;
+}
+
+.cartScrollContainer::-webkit-scrollbar-thumb {
+    background-color: green;
+    /* Color of the scroll thumb */
+    border-radius: 10px;
+    /* Round the scrollbar edges */
+}
+
+.cartScrollContainer::-webkit-scrollbar-track {
+    background: transparent;
+    /* Background of the scrollbar track */
+}
+
+.cartScrollContainer::-webkit-scrollbar-thumb {
+    background-color: green;
+    /* Color of the scroll thumb */
+    border-radius: 10px;
+    /* Round the scrollbar edges */
+}
+
+.cartScrollContainer::-webkit-scrollbar-track {
+    background: transparent;
+    /* Background of the scrollbar track */
+}
+
+.cartAmountSection {
+    /* position: sticky; Keep the bottom section fixed */
+    /* bottom: 0; */
+    z-index: 10;
+    /* Ensure it stays above the scrollable content */
+    background-color: var(--light-white);
+    padding-top: 10px;
+    overflow: hidden;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+    /* Slight shadow for separation */
+}
+
+.cartSectionRight.show {
+    right: 0;
+}
+
+.cartSectionRight.hide {
+    right: -450px;
+}
+
+.cartSectionRight h3 {
+    color: var(--secondary-clr);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.menuCardOuter {
+    border: 1px solid var(--primary-clr);
+    padding: 18px;
+    width: 250px;
+    height: fit-content;
+    border-radius: 10px;
+    box-shadow: 0.1px 0.1px 4px var(--primary-clr);
+}
+
+.menuItemName {
+    color: var(--secondary-clr);
+    /* font-size: 20px; */
+    font-weight: 700;
+}
+
+
+
+.menuItemRatings {
+    color: #ffd500;
+    /* Gold color for the star */
+    margin-right: 5px;
+    /* Adds space between the star and the rating */
+    display: flex;
+    align-items: center;
+    /* Ensures the star is vertically aligned */
+}
+
+.menuItemPrice {
+    color: var(--primary-clr);
+    font-weight: 700;
+}
+
+.menuItemRatings svg {
+    margin-right: 5px;
+}
+
+.addMenuItems {
+    background-color: var(--primary-clr);
+    color: var(--light-white);
+    padding: 5px 10px;
+    border: none;
+    font-size: 13px;
+    border-radius: 10px;
+    font-weight: 600;
+    /* width: 100% !important; */
+}
+
+/* .menuSection{} */
+.menuSection h2 {
+    color: var(--secondary-clr);
+
+}
+
+.readMoreLess {
+    color: var(--primary-clr);
+    cursor: pointer;
+}
+
+.menuSection .secBtmCnt {
+    color: var(--grey-color);
+    font-weight: 500;
+}
+
+
+.menuSection input {
+    border-radius: 10px !important;
+
+}
+
+.menuSection .input-group {
+
+    width: 100% !important;
+}
+
+.cart-controls {}
