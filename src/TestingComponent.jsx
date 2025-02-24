@@ -178,7 +178,7 @@ const OrderForm = () => {
 
         <Row className="my-3">
           <div className="col-md-6">
-            <h5 className='mb-0'>Add Product </h5>
+            <h5 className='mb-0'>Add Stock </h5>
           </div>
         </Row>
         {
@@ -320,7 +320,7 @@ const OrderForm = () => {
               onClick={addProduct}
               size="sm"
             >
-              Add Product
+              Add Stock 
             </Button>
           </Col>
         </Row>

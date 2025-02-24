@@ -4,124 +4,43 @@ import axios from 'axios';
 import { FaEye } from "react-icons/fa";
 import { BASE_URL } from "../utils/config";
 import { useNavigate } from "react-router-dom";
-import { Table, Form, Col, InputGroup, Row, Modal, Button } from "react-bootstrap";
+import useBackButton from "../hooks/useBackButton";
+import { Table, Form, Col, InputGroup, Row, Pagination, Modal, Button } from "react-bootstrap";
 const KitchenListView = () => {
   const [kitchenData, setKitchenData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const goBack = useBackButton();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [statusOptions, setStatusOptions] = useState(['Pending', 'Preparing', 'Completed']);
   const [selectedStatuses, setSelectedStatuses] = useState({});
-  const [showViewModal, setShowViewModal] = useState(false);
-  const printRef = useRef(); // Ref for the print content
+  const [allKitchenData, setAllKitchenData] = useState([]); // Store ALL data
+  // const [filteredData, setFilteredData] = useState([]);
+  // const [loading, setLoading] = useState(true);
 
-  const [selectedOrder, setSelectedOrder] = useState(null);
+
   const navigate = useNavigate();
-  const handleViewModalPrint = (e) => {
-    e.preventDefault();
-    if (printRef.current) {
-      const printContents = printRef.current.innerHTML;
-      const printWindow = window.open('', '_self');
-
-      if (printWindow) {
-        printWindow.document.open();
-        printWindow.document.write(`
-                    <html>
-                    <head>
-                        <title>Print Kitchen Bill</title>
-                        <style>
-                            @media print {
-                                body { 
-                                    margin: 0; 
-                                    padding: 0; 
-                                    font-family: Arial, sans-serif; 
-                                }
-                                #bill-content { 
-                                    width: 80mm; /* Or 100% if you prefer */
-                                    box-sizing: border-box; 
-                                }
-                                table { 
-                                    width: 100%; 
-                                    border-collapse: collapse; 
-                                    table-layout: fixed; /* Important for consistent column widths */
-                                    font-size: 12px; /* Base font size for the table - adjust as needed */
-                                }
-                                th, td { 
-                                    padding: 6px 8px; /* Increased padding for better readability */
-                                    text-align: left; 
-                                    border-bottom: 1px solid #ddd; /* Add borders between rows */
-                                }
-                                th { 
-                                    font-weight: bold; 
-                                    background-color: #f2f2f2; /* Light background for header */
-                                }
-                                /* Styles for specific elements */
-                                .text-end { text-align: right; }
-                                .text-center { text-align: center; }
-                                .footer-text { margin-top: 10px; }
-                                .header-text { 
-                                    font-size: 1.4em; /* Slightly larger header */
-                                    font-weight: bold; 
-                                    margin-bottom: 10px; 
-                                }
-                                .shop-title { 
-                                    font-size: 1.6em; /* Larger shop title */
-                                    font-weight: bold; 
-                                    margin-bottom: 5px; 
-                                }
-                                .shop-details {
-                                    font-size: 1.2em; 
-                                    margin-bottom: 10px; 
-                                    white-space: pre-wrap; /* Preserve line breaks */
-                                }
-                                .small-text { font-size: 1.0em; }
-                                .bill-info { margin-bottom: 8px;}
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div id="bill-content">${printContents}</div>
-                    
-                        <script>
-                            window.addEventListener('DOMContentLoaded', () => {
-                                window.print();
-                                window.close();
-                            });
-                        </script>
-                    </body>
-                    </html>
-                `);
-        printWindow.document.close();
-      } else {
-        alert("Please allow pop-ups for printing.");
-      }
-    }
-  };
-
+  
   const handleViewProduct = async (orderID) => {
     if (!orderID) {
       console.error("KitchenOrdersOrderID is undefined");
       alert("Invalid Order ID");
       return;
     }
-
     setLoading(true);
     try {
       const response = await axios.post(`${BASE_URL}/api/kitchenlistview?search=${orderID}`);
 
       if (response.data.status === "success" && response.data.kitchenview.length > 0) {
-        const orderData = response.data.kitchenview[0];  // Get the first order object
-
-        // Check if orderData is available before proceeding
+        const orderData = response.data.kitchenview[0];
         if (orderData) {
-          const autoID = orderData.KitchenOrdersAutoID; // Extract autoID
+          const autoID = orderData.KitchenOrdersAutoID;
           if (autoID) {
             console.log("Order ID:", autoID);
             navigate('/print-kitchen-bill', {
-              state: { KitchenOrdersAutoID: autoID, orderData }, // Pass orderData along with KitchenOrdersAutoID
+              state: { KitchenOrdersAutoID: autoID, orderData },
             });
           } else {
             console.error("KitchenOrdersAutoID not found in response");
@@ -143,9 +62,6 @@ const KitchenListView = () => {
     }
   };
 
-
-
-
   const getBadgeClass = (status) => {
     switch (status) {
       case "Pending":
@@ -163,80 +79,80 @@ const KitchenListView = () => {
 
   useEffect(() => {
     const fetchKitchenData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const formData = new FormData();
-        if (searchTerm) {
-          formData.append('search', searchTerm); // Append the search term to FormData
-        }
-        const response = await axios.post(`${BASE_URL}/api/kitchenlistview`, formData);
-
-
-        if (response.data.status === "success" && response.data.kitchenview) {
-          setKitchenData(response.data.kitchenview);
-          setFilteredData(response.data.kitchenview);
+        setLoading(true);
+        try {
+            const response = await axios.post(`${BASE_URL}/api/kitchenlistview`); // No search term initially
+            if (response.data.status === "success" && response.data.kitchenview) {
+                setAllKitchenData(response.data.kitchenview); // Set ALL data
+                setFilteredData(response.data.kitchenview);
 
           const initialStatuses = {};
           response.data.kitchenview.forEach(item => {
-            initialStatuses[item.KitchenOrdersAutoID] = item.KitchenOrdersStatus; // Use KitchenOrdersAutoID
+            initialStatuses[item.KitchenOrdersAutoID] = item.KitchenOrdersStatus;
           });
           setSelectedStatuses(initialStatuses);
 
         } else {
           console.error("Invalid API response:", response.data);
-          // setError("Failed to fetch data. Please check the API.");
-          setKitchenData([]);
+          setAllKitchenData([]);
           setFilteredData([]);
-        }
-      } catch (err) {
-
-        setKitchenData([]);
-        setFilteredData([]);
-      } finally {
-        setLoading(false);
       }
-    };
+  } catch (err) {
+      console.error("Error fetching data:", err);
+      setAllKitchenData([]);
+      setFilteredData([]);
+  } finally {
+      setLoading(false);
+  }
+};
 
-    fetchKitchenData();
-  }, [searchTerm]);
+fetchKitchenData(); // Fetch data ONCE on mount
+}, []); 
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1);
-  };
+const handleSearchChange = (e) => {
+  const searchValue = e.target.value.toLowerCase();
+  setSearchTerm(searchValue); // Keep searchTerm in state for the input
 
-  const handleStatusChange = async (kitchenOrdersAutoID, newStatus) => {
- 
-    setKitchenData(prevData =>
+  const filtered = allKitchenData.filter(item => { // Filter against ALL data
+      const tokenNo = String(item.KitchenOrdersTokenNo || "").toLowerCase();
+      return tokenNo.includes(searchValue);
+  });
+  setFilteredData(filtered);
+  setCurrentPage(1);
+};
+
+const handleStatusChange = async (kitchenOrdersAutoID, newStatus) => {
+  // Optimistic update (update UI immediately)
+  setAllKitchenData(prevData =>
       prevData.map(item =>
-        item.KitchenOrdersAutoID === kitchenOrdersAutoID
-          ? { ...item, KitchenOrdersStatus: newStatus }
-          : item
+          item.KitchenOrdersAutoID === kitchenOrdersAutoID
+              ? { ...item, KitchenOrdersStatus: newStatus }
+              : item
       )
-    );
-    setFilteredData(prevData =>
+  );
+  setFilteredData(prevData =>
       prevData.map(item =>
-        item.KitchenOrdersAutoID === kitchenOrdersAutoID
-          ? { ...item, KitchenOrdersStatus: newStatus }
-          : item
+          item.KitchenOrdersAutoID === kitchenOrdersAutoID
+              ? { ...item, KitchenOrdersStatus: newStatus }
+              : item
       )
-    );
-    setSelectedStatuses(prevStatuses => ({
+  );
+  setSelectedStatuses(prevStatuses => ({
       ...prevStatuses,
       [kitchenOrdersAutoID]: newStatus,
-    }));
-  
-    try {
-      const response = await axios.post(`${BASE_URL}/api/updateKitchenStatusByToken`, {
+  }));
+
+
+  try {
+    const response = await axios.post(`${BASE_URL}/api/updateKitchenStatusByToken`, {
         token_no: kitchenOrdersAutoID,
         status: newStatus,
-      });
-  
-      if (response.data.status === "success") {
-        console.log("Status updated successfully:", response.data.message);
-      } else {
+    });
+
+
+ if (response.data.status === "success") {
+                console.log("Status updated successfully:", response.data.message);
+            } else {
         console.error("Error updating status:", response.data.message);
         alert(response.data.message || "Error updating status. Please try again.");
       }
@@ -245,26 +161,31 @@ const KitchenListView = () => {
       alert("A network error occurred while updating status.");
     }
   };
-  
-  // fetchKitchenData();
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
 
   return (
     <div>
-      <div className="row">
-        <div className="col-6"><h3> Kitchen View</h3></div>
-        <div className="col-6"></div>
-      </div>
+
+      <Row>
+        <Col md={6}>
+          <h3>Kitchen View </h3>
+        </Col>
+        <Col md={6} className="d-flex justify-content-end align-items-center">
+          <button className="btn btn-sm btn-dark" onClick={goBack}>
+            {" "}
+            Back
+          </button>
+        </Col>
+      </Row>
+
+
+
       <Row className="mb-2">
         <Col md={6}>
           <Form.Control
@@ -282,7 +203,6 @@ const KitchenListView = () => {
               <tr>
                 <th>Kitchen Order Number</th>
                 <th>Token No</th>
-                <th>Token No</th>
                 <th>Order Table Number</th>
                 <th>Status</th>
                 <th>Update Status</th>
@@ -291,20 +211,15 @@ const KitchenListView = () => {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr><td colSpan="7" className="text-center">Loading...</td></tr>
-              ) : error ? (
-                <tr><td colSpan="7" className="text-center text-danger">{error}</td></tr>
-              ) : currentItems.length === 0 ? (
+              {currentItems.length === 0 ? (
                 <tr><td colSpan="7" className="text-center">No data found</td></tr>
               ) : (
                 currentItems.map((item) => (
                   <tr key={item.KitchenOrdersAutoID}>
                     <td>{item.KitchenOrdersAutoID}</td>
-                    <td>{item.KitchenOrdersRefNo}</td>
                     <td>{item.KitchenOrdersTokenNo}</td>
                     <td>{item.KitchenOrdersTableNo || "-"}</td>
-                    <td>{item.KitchenOrdersTableNo || "-"}</td>
+
                     <td>
                       <span className={`badge ${getBadgeClass(item.KitchenOrdersStatus)}`}>
                         {item.KitchenOrdersStatus}
@@ -339,39 +254,32 @@ const KitchenListView = () => {
               )}
             </tbody>
           </Table>
-
         </Col>
-
-        {totalPages > 1 && (
-          <div className="pagination justify-content-end mt-3">
+        <div className="d-flex justify-content-end mt-3">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            Previous
+          </button>
+          {[...Array(Math.ceil(filteredData.length / itemsPerPage))].map((_, index) => (
             <button
-              className="btn btn-outline-secondary"
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
+              key={index + 1}
+              className={`btn ${currentPage === index + 1 ? "btn-primary" : "btn-outline-secondary"} mx-1`}
+              onClick={() => handlePageChange(index + 1)}
             >
-              Previous
+              {index + 1}
             </button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i + 1}
-                className={`btn ${currentPage === i + 1
-                  ? "btn-primary"
-                  : "btn-outline-secondary"
-                  } mx-1`}
-                onClick={() => handlePageChange(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              className="btn btn-outline-secondary"
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-            >
-              Next
-            </button>
-          </div>
-        )}
+          ))}
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === Math.ceil(filteredData.length / itemsPerPage)}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            Next
+          </button>
+        </div>
       </Row>
     </div>
   );

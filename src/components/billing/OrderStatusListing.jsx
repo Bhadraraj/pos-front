@@ -29,7 +29,7 @@ const OrderList = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const [allOrders, setAllOrders] = useState([]);
 
 
   const ordersPerPage = 5; // Adjust based on your needs
@@ -182,25 +182,7 @@ const OrderList = () => {
     }
   };
 
-  // const fetchOrders = async () => {
-  //   try {
-  //     const formData = new FormData();
-  //     const response = await axios.post(`${BASE_URL}/api/allorderlist`, formData);
-
-  //     console.log("API Response:", response.data); // Debugging output
-
-  //     if (response.data.status === "success" && Array.isArray(response.data.orders)) {
-  //       setOrders(response.data.orders); // Directly set orders since it's already an array
-  //       setFilteredOrders(response.data.orders);
-  //     } else {
-  //       console.log("No orders found in API response");
-  //       setFilteredOrders([]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching orders:", error);
-  //     setFilteredOrders([]);
-  //   }
-  // };
+ 
   const fetchOrders = async (
     page = 1,
     status = "",
@@ -210,7 +192,11 @@ const OrderList = () => {
   ) => {
     try {
       const formData = new FormData();
+      formData.append("page", page);
 
+      if (searchTerm) {
+        formData.append("billno", searchTerm); // Or whichever field is relevant
+      }
       // ✅ Apply filtering logic
       if (status && status !== "All") {
         formData.append("orderstatus", status);
@@ -227,41 +213,36 @@ const OrderList = () => {
       }
       formData.append("page", page);
 
-      // ✅ API Request
       const response = await axios.post(`${BASE_URL}/api/allorderlist`, formData);
-      console.log("API Response:", response.data); // Debugging output
+      console.log("API Response:", response.data);
 
-      // ✅ Handle Response
       if (response.data.status === "success" && Array.isArray(response.data.orders)) {
-        setOrders(response.data.orders); // Directly set orders
-        setFilteredOrders(response.data.orders);
+        setAllOrders(response.data.orders); // Set all orders received from the API
+        applyFilters(response.data.orders, searchTerm, status, payStatus, orderBillStatus, parcelType);
+        setPagination(response.data.pagination || {});
       } else {
         console.log("No orders found in API response");
+        setAllOrders([]);
         setFilteredOrders([]);
+        setPagination({});
       }
+
     } catch (error) {
       console.error("Error fetching orders:", error);
+      setAllOrders([]);
       setFilteredOrders([]);
+      setPagination({});
+    } finally {
+      setLoading(true);
     }
   };
-
   // Ensure filteredOrders is an array before using slice()
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = Array.isArray(filteredOrders)
-    ? filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder)
-    : [];
+  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder); // No need for conditional check here anymore
 
   console.log("Filtered Orders:", filteredOrders);
   console.log("Current Orders (Paginated):", currentOrders);
-
-
-
-
-  // const handleViewProduct = (order) => {
-  //   setSelectedOrder(order);
-  //   setShowViewModal(true);
-  // };
 
 
   const handleViewProduct = async (order) => {
@@ -270,11 +251,8 @@ const OrderList = () => {
       const response = await axios.post(
         `${BASE_URL}/api/ordersearch?billid=${order.OrderID}`
       );
-
-
       if (response.data.status === "success") {
         const orderData = response.data.orders;
-        // Navigate to print-bill with orderData
         window.location.href = `/print-kitchen-bill?data=${encodeURIComponent(
           JSON.stringify(orderData)
         )}`;
@@ -287,9 +265,6 @@ const OrderList = () => {
     } finally {
       setLoading(false);
     }
-
-
-
 
   };
 
@@ -348,28 +323,10 @@ const OrderList = () => {
     setCurrentPage(page);
   };
 
-
-  // const handlePageChange = async (page) => {
-  //   if (page < 1 || page > pagination.total_pages) return;
-  //   setCurrentPage(page);
-
-  //   if (orderStatus) {
-  //     await fetchOrders(page, orderStatus);
-  //   } else if (orderPayStatus) {
-  //     await fetchOrders(page, "", orderPayStatus);
-  //   } else if (orderBillStatus) {
-  //     await fetchOrders(page, "", "", orderBillStatus);
-  //   } else {
-  //     await fetchOrders(page); // Fetch all orders if no filters are applied
-  //   }
-  // };
-
   const handleEditProduct = (order) => {
     navigate("/update-order", {
       state: { billNo: order.OrderBillNo, orderId: order.OrderID },
     });
-
-    // navigate('/update-order', { state: { billNo: order.OrderBillNo } }); // Use navigate with state
   };
 
   const getBadgeClass = (status) => {
@@ -387,34 +344,57 @@ const OrderList = () => {
     }
   };
 
-  // Function to directly send the scanned data as searchTerm
-  // Function to handle the scanned QR result and update the searchTerm
   const setResult = async (data) => {
     setSearchTerm(data); // Set the scanned result as input value
     await handleSearchChange(data); // Send scanned result as searchTerm to API
   };
 
-  const handleSearchChange = async (searchTerm) => {
-    const formattedSearchTerm = searchTerm.toLowerCase().trim();
-    const formData = new FormData();
-    formData.append("billno", formattedSearchTerm); // Assuming 'billno' is the search field
 
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/allorderlist`,
-        formData
-      );
-      if (response.data.status === "success") {
-        setFilteredOrders(response.data.orders.data);
-        setPagination(response.data.pagination);
-      } else {
-        console.log("No orders found");
-        setFilteredOrders([]);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    }
+  const handleSearchChange = (searchTerm) => {
+    setSearchTerm(searchTerm);
+    setCurrentPage(1); // Reset to first page
+    applyFilters(allOrders, searchTerm, orderStatus, orderPayStatus, orderBillStatus, orderParcelRegular); // Apply filters
   };
+  ;
+  const applyFilters = (orders, searchTerm, status, payStatus, orderBillStatus, parcelType) => {
+    let filtered = [...orders];
+
+    if (searchTerm) {
+        const trimmedSearchTerm = searchTerm.toLowerCase().trim();
+
+        filtered = filtered.filter(order => {
+            const orderRefNo = order.OrderRefNo ? order.OrderRefNo.toLowerCase() : "";
+            const orderCardNumber = order.OrderCardNumber ? order.OrderCardNumber.toLowerCase() : "";
+            const orderCustMobileNo = order.OrderCustMobileNo ? order.OrderCustMobileNo.toLowerCase() : "";
+            const orderTableNumber = order.OrderTableNumber ? order.OrderTableNumber.toLowerCase() : ""; // Add table number
+
+            return (
+                orderRefNo.includes(trimmedSearchTerm) ||
+                orderCardNumber.includes(trimmedSearchTerm) ||
+                orderCustMobileNo.includes(trimmedSearchTerm) ||
+                orderTableNumber.includes(trimmedSearchTerm) // Include table number in search
+            );
+        });
+    }
+
+    if (status && status !== "All") {
+        filtered = filtered.filter(order => order.OrderStatus === status);
+    }
+
+    if (payStatus && payStatus !== "All") {
+        filtered = filtered.filter(order => order.OrderPaymentStatus === payStatus);
+    }
+
+    if (orderBillStatus && orderBillStatus !== "All") {
+        filtered = filtered.filter(order => order.OrderBillType === orderBillStatus);
+    }
+
+    if (parcelType && parcelType !== "All") {
+        filtered = filtered.filter(order => order.OrderParcelRegular === parcelType);
+    }
+
+    setFilteredOrders(filtered);
+};
 
   const handleDeleteProduct = async (orderID) => {
     try {
@@ -539,7 +519,7 @@ const OrderList = () => {
               <Form.Control
                 type="text"
                 id="cardNumberIp"
-                placeholder="Search by Order ID / Bill No / Mobile Number"
+                placeholder="Search by Bill No / Mobile Number"
                 className="form-control"
                 value={searchTerm}
                 onChange={(e) => {
@@ -682,31 +662,25 @@ const OrderList = () => {
                   <td>
                     <div className="row  ">
                       <div className="col-12 d-flex justify-content-evenly align-items-center">
-                        {order.OrderPaymentMethod == "Card" ? (
-                          <>
-                            <div
-                              onClick={() => handleEditProduct(order)}
-                              className="edit-button"
-                            >
-                              <MdEditSquare />
-                            </div>
-                          </>
-                        ) : (
-                          <></>
+                        {order.OrderPaymentMethod === "Card" && order.orderPayStatus === "NotPaid" && (
+                          <div onClick={() => handleEditProduct(order)} className="edit-button">
+                            <MdEditSquare />
+                          </div>
                         )}
+{/* 
                         <div
                           onClick={() => handleDeleteProduct(order.OrderID)}
                           className="delete-button me-2"
                         >
                           <MdDelete />
-                        </div>
+                        </div> */}
 
-                        <div
+                        {/* <div
                           onClick={() => handleViewProduct(order)}
                           className="view-button me-2"
                         >
                           <FaEye />
-                        </div>
+                        </div> */}
                         {order.OrderPaymentMethod == "Cash" ? (
                           <div onClick={() => handlePrintCash(order)} className="print-button me-2">
                             <IoPrint />

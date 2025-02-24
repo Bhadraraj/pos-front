@@ -13,14 +13,9 @@ import { BASE_URL } from "../utils/config";
 import Scanner from "../../qrscan/Scanner";
 const OrderList = () => {
     const navigate = useNavigate();
-    const [searchTerm, setSearchTerm] = useState("");
     const printRef = useRef(null);
     const goBack = useBackButton();
     const [orders, setOrders] = useState([]);
-    const [orderStatus, setOrderStatus] = useState("");
-    const [orderParcelRegular, setOrderParcelRegular] = useState("");
-    const [orderBillStatus, setOrderBillStatus] = useState("");
-    const [orderPayStatus, setOrderPayStatus] = useState("");
 
     const [pagination, setPagination] = useState({});
 
@@ -28,12 +23,28 @@ const OrderList = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [orderData, setOrderData] = useState(null);
-    const [loading, setLoading] = useState(false);
 
-    const [allOrders, setAllOrders] = useState([]); // Store all fetched orders
+
+
+
+
+
+
+
+
+    const [allOrders, setAllOrders] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [orderStatus, setOrderStatus] = useState("All"); // Initialize to "All"
+    const [orderParcelRegular, setOrderParcelRegular] = useState("All"); // Initialize to "All"
+    const [orderBillStatus, setOrderBillStatus] = useState("All"); // Initialize to "All"
+    const [orderPayStatus, setOrderPayStatus] = useState("All"); // Initialize to "All"
     const ordersPerPage = 5;
     const [currentPage, setCurrentPage] = useState(1);
+    const [loading, setLoading] = useState(false); // Add loading state
+
+
+
 
 
     const handlePrintCard = async (order) => {
@@ -142,15 +153,43 @@ const OrderList = () => {
         }
     };
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (
+        searchTermRefNo = "",
+        searchTermCardNumber = "",
+        searchTermMobile = "",
+        page = 1, // Add page parameter
+        status = "All", // Add status parameter
+        payStatus = "All", // Add payStatus parameter
+        orderBillStatusParam = "All", // Add orderBillStatus parameter
+        parcelType = "All"  // Add parcelType parameter
+    ) => {
+        setLoading(true);
         try {
-            const response = await axios.post(`${BASE_URL}/api/allorderlist`); // No pagination or filtering in the initial fetch
+            const formData = new FormData();
+            const response = await axios.post(`${BASE_URL}/api/allorderlist`);
+
+            formData.append("page", page);  // Append page to form data
+
+            if (searchTermRefNo) {
+                formData.append("OrderRefNo", searchTermRefNo);
+            }
+            if (searchTermCardNumber) {
+                formData.append("OrderCardNumber", searchTermCardNumber);
+            }
+            if (searchTermMobile) {
+                formData.append("OrderCustMobileNo", searchTermMobile);
+            }
+
+            formData.append("OrderStatus", status);  // Append status to form data
+            formData.append("OrderPaymentStatus", payStatus);  // Append payStatus
+            formData.append("OrderBillType", orderBillStatusParam);  // orderBillStatus
+            formData.append("OrderParcelRegular", parcelType); // parcelType
 
             if (response.data.status === "success" && Array.isArray(response.data.orders)) {
-                const cardOrders = response.data.orders.filter(order => order.OrderPaymentMethod === "Card"); // Filter for "Card" payments
-                setAllOrders(cardOrders); // Set all card orders
-                applyFiltersAndSearch(cardOrders); // Apply initial filters and search
-
+                const cardOrders = response.data.orders.filter(order => order.OrderPaymentStatus === "NotPaid");
+                setAllOrders(cardOrders);
+                applyFiltersAndSearch(cardOrders);
+                setPagination(response.data.pagination || {}); // Update pagination
             } else {
                 console.log("No orders found in API response");
                 setAllOrders([]);
@@ -160,8 +199,10 @@ const OrderList = () => {
             console.error("Error fetching orders:", error);
             setAllOrders([]);
             setFilteredOrders([]);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     // Ensure filteredOrders is an array before using slice()
     const indexOfLastOrder = currentPage * ordersPerPage;
@@ -175,35 +216,34 @@ const OrderList = () => {
     //   setSelectedOrder(order);
     //   setShowViewModal(true);
     // };
-    const applyFiltersAndSearch = (ordersToFilter) => {
-        let filtered = [...ordersToFilter];  // Start with all orders
+    const applyFiltersAndSearch = (orders) => {
+        let filtered = [...orders];
 
-        // Apply Search Filter:
         if (searchTerm) {
             const formattedSearchTerm = searchTerm.toLowerCase().trim();
-            filtered = filtered.filter(order =>
-                order.OrderID.toString().toLowerCase().includes(formattedSearchTerm) ||
-                order.OrderBillNo.toString().toLowerCase().includes(formattedSearchTerm) ||
-                order.OrderMobileNo.toString().toLowerCase().includes(formattedSearchTerm) // Add mobile number search
-            );
+            filtered = filtered.filter(order => {
+                const orderRefNo = order.OrderRefNo ? order.OrderRefNo.toString().toLowerCase() : "";
+                const cardNumber = order.OrderCardNumber ? order.OrderCardNumber.toString().toLowerCase() : "";
+                const mobileNo = order.OrderCustMobileNo ? order.OrderCustMobileNo.toString().toLowerCase() : "";
+                return orderRefNo.includes(formattedSearchTerm) || cardNumber.includes(formattedSearchTerm) || mobileNo.includes(formattedSearchTerm);
+            });
         }
 
-        // Apply other filters (status, bill status, parcel, pay status):
-        if (orderStatus && orderStatus !== "All") {
+        if (orderStatus !== "All") {
             filtered = filtered.filter(order => order.OrderStatus === orderStatus);
         }
-        if (orderBillStatus && orderBillStatus !== "All") {
+        if (orderBillStatus !== "All") {
             filtered = filtered.filter(order => order.OrderBillStatus === orderBillStatus);
         }
-        if (orderParcelRegular && orderParcelRegular !== "All") {
+        if (orderParcelRegular !== "All") {
             filtered = filtered.filter(order => order.OrderParcelRegular === orderParcelRegular);
         }
-        if (orderPayStatus && orderPayStatus !== "All") {
+        if (orderPayStatus !== "All") {
             filtered = filtered.filter(order => order.OrderPayStatus === orderPayStatus);
         }
 
-        setFilteredOrders(filtered); // Set the final filtered orders
-        setCurrentPage(1); // Reset to first page after filtering/search
+        setFilteredOrders(filtered);
+        setCurrentPage(1); // Reset to first page after applying filters
     };
 
 
@@ -240,29 +280,35 @@ const OrderList = () => {
     const filterStatus = (e) => {
         const status = e.target.value;
         setOrderStatus(status);
-        applyFiltersAndSearch(allOrders); // Apply search and filters
+        applyFiltersAndSearch(allOrders);
+        fetchOrders("", "", "", 1, status, orderPayStatus, orderBillStatus, orderParcelRegular); // Pass all filter values
     };
 
     const filterBillStatus = (e) => {
         const status = e.target.value;
         setOrderBillStatus(status);
-        applyFiltersAndSearch(allOrders); // Apply search and filters
+        applyFiltersAndSearch(allOrders);
+        fetchOrders("", "", "", 1, orderStatus, orderPayStatus, status, orderParcelRegular); // Pass all filter values
     };
 
     const filterParcelRegular = (e) => {
         const parcelType = e.target.value;
         setOrderParcelRegular(parcelType);
-        applyFiltersAndSearch(allOrders); // Apply search and filters
+        applyFiltersAndSearch(allOrders);
+        fetchOrders("", "", "", 1, orderStatus, orderPayStatus, orderBillStatus, parcelType); // Pass all filter values
     };
 
     const filterPayStatus = (e) => {
         const status = e.target.value;
         setOrderPayStatus(status);
-        applyFiltersAndSearch(allOrders); // Apply search and filters
+        applyFiltersAndSearch(allOrders);
+        fetchOrders("", "", "", 1, orderStatus, status, orderBillStatus, orderParcelRegular); // Pass all filter values
     };
+
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
+        fetchOrders(searchTerm, searchTerm, searchTerm, pageNumber, orderStatus, orderPayStatus, orderBillStatus, orderParcelRegular); // Pass all filter values
     };
 
     const handleEditProduct = (order) => {
@@ -288,7 +334,6 @@ const OrderList = () => {
                 return "";
         }
     };
-
     const setResult = async (data) => {
         setSearchTerm(data); // Set the scanned result as input value
         await handleSearchChange(data); // Send scanned result as searchTerm to API
@@ -296,7 +341,8 @@ const OrderList = () => {
 
     const handleSearchChange = (searchTerm) => {
         setSearchTerm(searchTerm);
-        applyFiltersAndSearch(allOrders); // Apply search and filters
+        applyFiltersAndSearch(allOrders);
+        fetchOrders(searchTerm, searchTerm, searchTerm, 1, orderStatus, orderPayStatus, orderBillStatus, orderParcelRegular); // Pass all filter values
     };
 
 
@@ -329,11 +375,7 @@ const OrderList = () => {
                                 placeholder="Search by Order ID / Bill No / Mobile Number"
                                 className="form-control"
                                 value={searchTerm}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setSearchTerm(value);
-                                    handleSearchChange(value);
-                                }}
+                                onChange={(e) => handleSearchChange(e.target.value)}
                             />
                             <InputGroup.Text id="basic-addon2" className="  btn btn-primary">
                                 <Scanner setResult={setResult} />

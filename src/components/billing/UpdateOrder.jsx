@@ -318,15 +318,44 @@ const UpdateOrder = () => {
                 isInvalid={errors[`productid-${index}`]}
               />
               {productListVisible[index] && productResults.length > 0 && (
-                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #ccc', marginTop: '5px' }}>
+                <div
+                  style={{
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    border: "1px solid #ccc",
+                    marginTop: "5px",
+                  }}
+                >
                   {productResults.map((productResult) => (
                     <div
                       key={productResult.ProductID}
-                      style={{ padding: '8px', cursor: 'pointer' }}
-                      onClick={() => handleProductSelect(productResult, index)}
+                      style={{ padding: "8px", cursor: "pointer" }}
+                      onClick={() =>
+                        handleProductSelect(productResult, index)
+                      }
                     >
-                      <p>{productResult.ProdName} ({productResult.ProdCode})</p>
-                      <img src={`${BASE_URL}${productResult.ProdImage}`} alt={productResult.ProdName} style={{ height: '50px', borderRadius: '10px', width: '50px' }} />
+                      <div className="row px-3 d-flex justify-content-between">
+                        <div className="col-8">
+                          <p className="mb-0">
+                            {" "}
+                            {productResult.ProdName}{" "}
+                            {/* <b>({productResult.ProdCode})</b> */}
+                            {/* <b> - {productResult.ProdBarCode} </b> */}
+                          </p>
+                        </div>
+                        <div className="col-4">
+                          <img
+                            src={`${BASE_URL}${productResult.ProdImage}`}
+                            alt={productResult.ProdName}
+                            style={{
+                              height: "50px",
+                              borderRadius: "10px",
+                              width: "50px",
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -1,133 +1,58 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { AiFillHome } from "react-icons/ai";
+import React, { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
 import { MdOutlineMenuBook } from "react-icons/md";
 import { FaClipboardList } from "react-icons/fa";
-import { MdNotificationsActive } from "react-icons/md";
 import { TbReport } from "react-icons/tb";
-import { FaUser } from "react-icons/fa";
-import { BiLogOutCircle } from "react-icons/bi";
-import LogoutBtn from './LogoutBtn';
-import { RiDashboardFill } from "react-icons/ri";
-import { IoIosSettings } from "react-icons/io";
-import '../styles/navLeft.css';
-import { RiBillFill } from "react-icons/ri";
-import { MdTableRestaurant } from "react-icons/md";
-import { GiRoundTable } from "react-icons/gi";
-// import { HiDocumentCurrencyRupee } from "react-icons/hi2";
-import { RiMoneyRupeeCircleFill } from "react-icons/ri";
+import { RiDashboardFill, RiBillFill, RiMoneyRupeeCircleFill } from "react-icons/ri";
+import "../styles/navLeft.css";
+
 const NavBarLeft = () => {
+    const [userData, setUserData] = useState(null);
+    const [role, setRole] = useState(""); // Initialize role as an empty string
+
+    useEffect(() => {
+        // Get user data from localStorage
+        const storedData = localStorage.getItem("userData");
+        if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            setUserData(parsedData);
+            setRole(parsedData.UserRole?.toLowerCase() || ""); // Ensure role is lowercase
+        }
+    }, []);
+
+    useEffect(() => {
+        if (userData) {
+            console.log("User Role:", userData.UserRole);
+        }
+    }, [userData]);
+
+    const menuItems = [
+        { to: "/", icon: <RiDashboardFill />, label: "Dashboard", roles: ["superadmin", "admin", "cashier"] },
+        { to: "/kitchen-view", icon: <TbReport />, label: "Kitchen View", roles: ["superadmin", "admin", "kitchen"] },
+        { to: "/cashier", icon: <RiMoneyRupeeCircleFill />, label: "Cashier", roles: ["superadmin", "admin", "cashier"] },
+        { to: "/add-menus", icon: <MdOutlineMenuBook />, label: "Add Menus", roles: ["superadmin", "admin", "waiter"] },
+        { to: "/order-status", icon: <FaClipboardList />, label: "Order Status", roles: ["superadmin", "admin"] },
+        { to: "/order-form", icon: <RiBillFill />, label: "Order Form", roles: ["superadmin", "admin", "waiter"] },
+        { to: "/resturant-form", icon: <RiBillFill />, label: "Restaurant Form", roles: ["superadmin", "admin", "resturantwaiter"] },
+        { to: "/restaurant-billing", icon: <RiBillFill />, label: "Restaurant Billing", roles: ["superadmin", "admin", "resturantcashier"] },
+    ];
+
     return (
         <div className="navBarLeft">
-            <ul className='m-0 p-0'>
-                <li>
-                    <NavLink
-                        to='/'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <RiDashboardFill />
-                    </NavLink>
-                </li>
-                {/* <li>
-                    <NavLink
-                        to='/'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <AiFillHome />
-                    </NavLink>
-                </li> */}
-                <li>
-                    <NavLink
-                        to='/kitchen-view'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <TbReport />
-                    </NavLink>
-                </li>
-                {/* <li>
-                    <NavLink
-                        to='/report'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <TbReport />
-                    </NavLink>
-                </li> */}
-                {/* <li>
-                    <NavLink
-                        to='/table-booking'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <MdTableRestaurant />
-                    </NavLink>
-                </li> */}
-                <li>
-                    <NavLink
-                        to='/cashier'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <RiMoneyRupeeCircleFill />
-                    </NavLink>
-                </li>
-                {/* <li>
-                    <NavLink
-                        to='/menu'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <MdOutlineMenuBook />
-                    </NavLink>
-                </li> */}
-                <li>
-                    <NavLink
-                        to='/add-menus'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <MdOutlineMenuBook />
-                    </NavLink>
-                </li>
-                {/* <li>
-                    <NavLink
-                        to='/notification'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <MdNotificationsActive />
-                    </NavLink>
-                </li> */}
-                <li>
-                    <NavLink
-                        to='/order-status'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <FaClipboardList />
-                    </NavLink>
-                </li>
-                {/* <li>
-                    <NavLink
-                        to='/customerList'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <FaClipboardList />
-                    </NavLink>
-                </li> */}
-                {/* <li>
-                    <NavLink
-                        to='/user'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <FaUser />
-                    </NavLink>
-                </li> */}
-                <li>
-                    <NavLink
-                        to='/order-form'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <RiBillFill />
-                    </NavLink>
-                </li>
-                {/* <li>
-                    <NavLink
-                        to='/setting'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <IoIosSettings />
-                    </NavLink>
-                </li> */}
-                {/* <li>
-                    <NavLink
-                        to='/logout'
-                        className={({ isActive }) => isActive ? 'active-link' : ''}>
-                        <LogoutBtn />
-                    </NavLink>
-                </li> */}
+            <ul className="m-0 p-0">
+                {menuItems
+                    .filter(menu => role && menu.roles.includes(role)) // Ensure role exists before filtering
+                    .map((menu, index) => (
+                        <li key={index}>
+                            <NavLink to={menu.to} className={({ isActive }) => (isActive ? "active-link" : "")}>
+                                <span className="icon">{menu.icon}</span>
+                                <span className="label">{menu.label}</span>
+                            </NavLink>
+                        </li>
+                    ))}
             </ul>
         </div>
     );
-}
+};
 
 export default NavBarLeft;

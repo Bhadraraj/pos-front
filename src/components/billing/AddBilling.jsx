@@ -147,92 +147,11 @@ const AddBilling = () => {
         setRows(updatedRows);
     };
 
-
     const handleAddRow = () => setRows([...rows, { productId: '', pieces: 1, price: 0, totalDiscount: 0 }]);
     const handleRemoveRow = (index) => {
         if (rows.length > 1) setRows(rows.filter((_, i) => i !== index));
     };
-    const getTodayDate = () => {
-        const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = today.getFullYear();
-        return `${day}-${month}-${year}`;
-    };
-
-    const getTotalDiscountAmount = () => {
-        return (rows.reduce((acc, row) => acc + calculateProductTotal(row), 0) * billingData.totalDiscount) / 100;
-    };
-
-
-
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     if (!validateFields()) return;
-
-    //     const payload = {
-    //         customerName: billingData.customerName,
-    //         products: rows.map((row) => {
-    //             const discountPercentage = row.price && row.totalPrice
-    //                 ? ((row.price - row.totalPrice) / row.price) * 100
-    //                 : 0;
-
-    //             return {
-    //                 productId: row.productId,
-    //                 productName: row.productName,
-    //                 price: row.price,
-    //                 pieces: row.pieces,
-    //                 discount: getTotalDiscountAmount(),
-    //                 totalPrice: calculateProductTotal(row),
-    //             };
-    //         }),
-    //         grandTotal: calculateGrandTotal(),
-    //         totalDiscount: getTotalDiscountAmount(),
-    //         totalTax: calculateTotalTax(),
-    //         paymentMethod: billingData.paymentMethod,
-    //         dateOfPurchase: getTodayDate(),
-    //     };
-
-
-    //     console.log(payload);
-
-    //     try {
-    //         setLoading(true);
-    //         const response = await fetch(
-    //             `${BASE_URL}/billing/create`,
-    //             {
-    //                 method: 'POST',
-    //                 headers: { 'Content-Type': 'application/json' },
-    //                 body: JSON.stringify(payload),
-    //             }
-    //         );
-
-    //         if (response.ok) {
-    //             const responseData = await response.json();
-    //             toast.success('Billing record added successfully!');
-    //             setBillingData({
-    //                 customerName: '',
-    //                 paymentMethod: 'Cash',
-    //                 applyTax: true,
-    //             });
-    //             setRows([{ productId: '', pieces: 1, price: 0, totalDiscount: 0 }]);
-
-    //             navigate("/invoice-page", { state: { response: responseData } });
-    //         } else {
-    //             const errorData = await response.json();
-    //             console.error('Server Error:', errorData);
-    //             toast.error('Failed to add billing record.');
-    //         }
-    //     } catch (error) {
-    //         console.error('Network Error:', error);
-    //         toast.error('An error occurred while submitting the record.');
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     const grandTotal = calculateGrandTotal();
-    const totalDiscount = calculateTotalDiscount();
     const totalTax = calculateTotalTax();
     return (
         <div>

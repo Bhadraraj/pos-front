@@ -1,26 +1,20 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Form, Button, Container, InputGroup, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import { BASE_URL } from "../utils/config";
 import { Link } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
-import { MdEditSquare, MdDelete } from "react-icons/md";
-import Scanner from "../../qrscan/Scanner";
 import '../../styles/printBill.css';
-import PrintBillOrder from "./PrintBillOrder";
 import { Select, Space } from "antd";
-import ApplyCoupon from "./ApplyCoupon";
 
 const OrderForm = () => {
   const { userID } = useAuth();
   const printRef = useRef(null);
-  const [orderPlaced, setOrderPlaced] = useState(false); // New state for order status
-
+  const [hasPrinted, setHasPrinted] = useState(false); // Add a flag
   // const [result, setResult] = useState("No result");
   const [debouncedCardNumber, setDebouncedCardNumber] = useState(""); // For debouncing
-
-
+  const [formKey, setFormKey] = useState(0); // Key to force re-render of the form
   const [orderDataDisplay, setOrderDataDisplay] = useState(null);
   const [discount, setDiscount] = useState(0);
   const [couponCode, setCouponCode] = useState("");
@@ -28,7 +22,6 @@ const OrderForm = () => {
   const [billNo, setBillNo] = useState(null);
   const [paymentMode, setPaymentMode] = useState('Cash');
   const [orderJson, setOrderJson] = useState(null);
-  const [printBillDataresponseJson, setResponseJson] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [orderData, setOrderData] = useState(null);
   const [tables, setTables] = useState([]);
@@ -36,7 +29,6 @@ const OrderForm = () => {
   const [productListVisible, setProductListVisible] = useState([]);
   const [errors, setErrors] = useState({});
   const [billType, setBillType] = useState('gst');
-  // const [cardValidityMessage, setCardValidityMessage] = useState(null); // New state for card validity message
   const [cardValidityMessage, setCardValidityMessage] = useState(null);
   const [checkButtonClicked, setCheckButtonClicked] = useState(false); // Track button click
 
@@ -54,7 +46,7 @@ const OrderForm = () => {
           response.data.status.toLowerCase() === "success" &&
           Array.isArray(response.data.result.tables)
         ) {
-          setTables(response.data.result.tables); // Correctly setting the table data
+          setTables(response.data.result.tables);
         } else {
           console.error("Unexpected response structure:", response.data);
         }
@@ -65,11 +57,9 @@ const OrderForm = () => {
   }, []);
 
   const tableOptions = tables.map((table) => ({
-    value: table.TableID, // Map TableID as the value
-    label: table.TableNumber, // Map TableNumber as the label
+    value: table.TableID,
+    label: table.TableNumber,
   }));
-  // console.log("Table Options:", tableOptions);
-
 
   const [formData, setFormData] = useState({
     userId: "",
@@ -80,9 +70,9 @@ const OrderForm = () => {
         price: 0,
         gst: 0,
         totalPrice: 0,
-        totalPriceWithGST: 0, // Add this line!
+        totalPriceWithGST: 0,
         searchTerm: "",
-        ProdParcelPrice: 0, // Add this line!
+        ProdParcelPrice: 0,
       },
     ],
     paymentMethod: "",
@@ -94,36 +84,12 @@ const OrderForm = () => {
     parcelRegular: "Takeout",
     gstPercentage: null,
   });
-  const handleBillTypeChange = (event) => {
-    const selectedValue = event.target.value;
-    console.log("Selected Value:", selectedValue); // Debugging
-    setBillType(selectedValue);
-  };
-  const handlepaymentMode = (event) => {
 
-    const selectedValue = event.target.value;
-    console.log("Selected Payment Mode :", selectedValue); // Debugging
-    setPaymentMode(selectedValue);
-  };
   useEffect(() => {
     console.log("Updated billType:", billType);
   }, [billType]);
 
-  useEffect(() => {
-    if (tokenNo && printRef.current) {
-      handlePrintToken();
-    }
-  }, [tokenNo]);
 
-  // This function is called by the Scanner component to set the result (card number)
-  const setResult = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      cardNumber: data, // Set the card number to the scanned QR code
-    }));
-    setCheckButtonClicked(false);
-    checkCardValidity(data);
-  };
   useEffect(() => {
     const timer = setTimeout(() => {
       if (formData.cardNumber !== debouncedCardNumber) return; // Check if input changed
@@ -133,46 +99,44 @@ const OrderForm = () => {
     return () => clearTimeout(timer);
   }, [debouncedCardNumber]);
 
-  const handleChange = (e) => {
+  const handleChange = (e, selectedValues) => {
     const { name, value } = e.target;
     if (Array.isArray(e)) {
-      console.log("Selected Tables:", e);
+    
       setFormData((prevData) => ({
         ...prevData,
-        OrderTableNo: e,
+        OrderTableNo: selectedValues,
       }));
     } else {
-      // const { name, value } = e.target;
+      
       if (name === "parcelRegular") {
         setFormData((prevData) => ({
           ...prevData,
           [name]: value,
         }));
       }
+
+      setFormData((prevData) => ({
+        ...prevData,
+        OrderTableNo: selectedValues, 
+      }));
+
+
       setFormData((prevData) => ({
         ...prevData,
         [name]: value,
       }));
     }
-    if (name === "cardNumber") {
-      setCardValidityMessage(null);
-      setErrors(prevErrors => ({ ...prevErrors, cardNumber: '' }));
-      setDebouncedCardNumber(value);  // Update debounced value!
-    }
+ 
   };
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (formData.cardNumber !== debouncedCardNumber) return; // Check if the input has changed
-      checkCardValidity(debouncedCardNumber); // Call API with debounced value
+      if (formData.cardNumber !== debouncedCardNumber) return;
+      checkCardValidity(debouncedCardNumber);
     }, 500); // Debounce time (500ms)
 
-    return () => clearTimeout(timer); // Clear timer if input changes
+    return () => clearTimeout(timer);
   }, [debouncedCardNumber]);
-
-  const handleCheckButtonClick = () => {
-    setCheckButtonClicked(true); // Set button as clicked
-    checkCardValidity(formData.cardNumber);
-  };
 
   const handleProductSearch = async (e, index) => {
     const { value } = e.target;
@@ -227,7 +191,7 @@ const OrderForm = () => {
       ...updatedProducts[index],
       productid: product.ProductID,
       price: selectedPrice,
-      ProdParcelPrice: product.ProdParcelPrice,
+      ProdParcelPrice: product.ProdParcelPrice, 
       gst: product.taxtinfo.TaxIGSTValue,
       searchTerm: product.ProdName,
     };
@@ -269,6 +233,14 @@ const OrderForm = () => {
     setFormData({ ...formData, products: updatedProducts });
   };
 
+  const handleTableChange = (selectedValues) => {
+    console.log("Selected Tables:", selectedValues);
+    setFormData((prevData) => ({
+      ...prevData,
+      OrderTableNo: selectedValues, // Store the selected table IDs
+    }));
+  };
+  
   const addProduct = () => {
     setFormData((prevData) => ({
       ...prevData,
@@ -398,16 +370,19 @@ const OrderForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const isValid = validateForm();
-    if (!isValid) {
-      return;
-    }
+    if (!isValid) return;
+
+    // Reset token before each submit
+    setTokenNo("");
+
     const orderTableNoString = Array.isArray(formData.OrderTableNo)
       ? formData.OrderTableNo.join(",")
       : "";
-    const OverallTotal =
-      billType === "gst"
-        ? calculateOverallTotal()
-        : calculateOverallTotalWithoutGst();
+
+    const OverallTotal = billType === "gst"
+      ? calculateOverallTotal()
+      : calculateOverallTotalWithoutGst();
+
     const orderData = {
       userId: userID,
       products: formData.products.map((product) => ({
@@ -416,10 +391,10 @@ const OrderForm = () => {
         price: product.price,
         totalPrice: product.totalPrice,
         gst: product.gst,
-        totalPriceWithGST: product.totalPriceWithGST, // Now this will have the correct value
+        totalPriceWithGST: product.totalPriceWithGST,
         ProdParcelPrice: product.ProdParcelPrice,
       })),
-      paymentMethod: formData.paymentMethod,
+      paymentMethod: 'Restaurant',
       mobileNumber: formData.mobileNumber,
       couponCode: couponCode,
       discount: discount,
@@ -429,55 +404,51 @@ const OrderForm = () => {
       ProductTotal: calculateOverallTotal(),
       cardNumber: formData.cardNumber,
       OrderTableNo: orderTableNoString,
-      payment_status:
-        formData.paymentMethod == "Card" ? "NotPaid" : formData.payment_status,
+      payment_status: "NotPaid",
       gst: calculateTotalGST() || 0,
       sgst: calculateTotalGST() / 2 || 0,
       cgst: calculateTotalGST() / 2 || 0,
       gstPercentage: formData.gstPercentage || null,
       billType: billType,
       paymentMode: paymentMode,
-
       tokenNo: tokenNo,
       parcelRegular: formData.parcelRegular,
     };
 
     setOrderDataDisplay(orderData);
-    setRefreshKey((prevKey) => prevKey + 1);
+    setRefreshKey(prevKey => prevKey + 1);
     setOrderJson(orderData);
-    console.log("Order Data ", orderData); // Use template literal for logging
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/placeorder`, orderData);
+      const response = await axios.post(`${BASE_URL}/api/placeorderrestaurant`, orderData);
       console.log("Full response:", response.data);
 
-      if (response.data && response.data.status === "success") {
-        setOrderPlaced(true);
-        setRefreshKey((prevKey) => prevKey + 1);
+      if (response.data?.status === "success") {
+        const { result } = response.data;
 
-        const billNo = response.data.result?.order_id || "Unknown Order ID"; // Prioritize billrefno, fallback to billno
-        // const billNo = response.data.result?.billrefno || response.data.result?.billno || "Unknown Bill ID"; // Prioritize billrefno, fallback to billno
-        const sequentialNumber = response.data.result?.sequential_number || "Unknown Sequential Number";
-        setTokenNo(response.data.result?.sequential_number || 'N/A');
-        const paymentMethod = response.data.result?.paymentMethod; // Get payment method
+        const billNo = result?.order_id || "Unknown Order ID";
+        const sequentialNumber = result?.sequential_number || "Unknown Sequential Number";
+        const paymentMethod = 'Restaurant';
+        setTokenNo(sequentialNumber);
         setBillNo(billNo);
-        let alertMessage = `Order placed successfully! \n Token Number: ${sequentialNumber}`;
-        // let alertMessage = `Order placed successfully! Bill No: ${billNo}\n Token Number: ${sequentialNumber}`;
-        if (paymentMethod !== "Card") { // Simplified conditional for non-cash
+        setHasPrinted(false)
+        if (paymentMethod !== "Card") {
           fetchOrderData(billNo);
-          alertMessage = `Order placed successfully! Bill No: ${billNo}\n Token Number: ${sequentialNumber}`;
         }
-        alert(alertMessage)
-        // handlePrintToken(sequentialNumber);
 
+        // Show success message
+        alert(`Order placed successfully..!`);
+
+        // Refresh the form
+        setRefreshKey(prevKey => prevKey + 1);
+        setFormKey(prevKey => prevKey + 1);
         setDiscount(0);
         setCouponCode("");
+        checkCardValidity()
         setFormData({
           userId: "",
-          products: [
-            { productid: "", quantity: 0, price: 0, gst: 0, totalPrice: 0, searchTerm: "" },
-          ],
-          paymentMethod: "Cash", // Default payment method
+          products: [{ productid: "", quantity: 0, price: 0, gst: 0, totalPrice: 0, searchTerm: "" }],
+          paymentMethod: "Restaurant",
           mobileNumber: "",
           cardNumber: "",
           OrderTableNo: [],
@@ -487,67 +458,19 @@ const OrderForm = () => {
           gstPercentage: null,
         });
 
-      } else if (response.data && response.data.message) { // Check if message is available
-        alert(response.data.message);
       } else {
-        alert("Order placement failed. Please try again.");
+        alert(response.data?.message || "Order placement failed. Please try again.");
       }
-
 
     } catch (error) {
       console.error("Error submitting order:", error);
       alert("An error occurred while submitting the order. Please try again.");
     }
-  };
+  }
 
   const currentDateTime = new Date();
   const formattedDateTime = `${currentDateTime.toLocaleDateString()} - ${currentDateTime.toLocaleTimeString()}`;
 
-
-  const handlePrintToken = () => {
-    if (printRef.current) {
-      const printContents = printRef.current.innerHTML;
-
-      const printWindow = window.open('', '_blank');
-
-      if (printWindow) {
-        printWindow.document.open();
-        printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Print Bill</title>
-                    <style>
-                        @media print {
-                            body {
-                                margin: 0;
-                                padding: 0;
-                                text-align: center;
-                                font-family: Arial, sans-serif;
-                                font-size: 12px;
-                            }
-                            #bill-content {  
-                                width: 80mm;
-                                box-sizing: border-box;
-                            }
-                         
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div id="bill-content">${printContents}</div>  
-                </body>
-                </html>
-            `);
-        printWindow.document.close();
-        printWindow.print();
-      } else {
-        alert("Please allow pop-ups for printing.");
-      }
-    } else {
-      console.error("printRef.current is null. Make sure the ref is attached to the element.");
-      alert("Error: Could not find the print content.");
-    }
-  };
   const checkCardValidity = async (cardNumber) => {
     setCardValidityMessage(null);
     setErrors(prevErrors => ({ ...prevErrors, cardNumber: '' }));
@@ -572,7 +495,7 @@ const OrderForm = () => {
       } else {
         setCardValidityMessage(response.data.message);
         setErrors(prevErrors => ({ ...prevErrors, cardNumber: response.data.message }));
-        formData.cardNumber = '' // Clear input field if the card is invalid
+        formData.cardNumber = ''
       }
     } catch (error) {
       console.error("Error checking card validity:", error);
@@ -619,151 +542,55 @@ const OrderForm = () => {
         <h3>API Response:</h3>
         <pre>{tables ? JSON.stringify(tables, null, 2) : 'Loading...'}</pre>
       </div> */}
-      <div>
-        <h3>API Response:</h3>
-        <pre>{printBillDataresponseJson ? JSON.stringify(printBillDataresponseJson, null, 2) : 'Loading...'}</pre>
-      </div>
-      <div>
-        <h3>API Response:</h3>
-        <pre>{orderJson ? JSON.stringify(orderJson, null, 2) : 'Loading...'}</pre>
-      </div>
-      {/* <div>
+
+
+      <Form onSubmit={handleSubmit} onKeyPress={handleKeyPress} key={formKey}>
+        {/* <div>
+          <h3>API Response:</h3>
+          <pre>{printBillDataresponseJson ? JSON.stringify(printBillDataresponseJson, null, 2) : 'Loading...'}</pre>
+        </div> */}
+        {/* <div>
+          <h3>API Response:</h3>
+          <pre>{orderJson ? JSON.stringify(orderJson, null, 2) : 'Loading...'}</pre>
+        </div> */}
+        {/* <div>
         <h3>Order Data:</h3>
         <pre>{JSON.stringify(orderDataDisplay, null, 2)}</pre>
       </div> */}
 
-      <div className="mb-3 row" key={refreshKey}>
-        <div className="col-md-6">
-          <h2>Order Form</h2>
+        <div className="mb-3 row"  >
+          <div className="col-md-6">
+            <h2>Restaurant Order Form</h2>
+          </div>
+          {/* <div className="col-lg-6 d-flex justify-content-end">
+            <Link to="/order-status">
+              {" "}
+              <button className=" btn-sm btn btn-secondary me-3">
+
+                Orders
+              </button>
+            </Link>
+            <Link to="/add-menus">
+              <button className=" btn-sm btn btn-secondary me-3">
+                Menu
+              </button>
+            </Link>
+            <Link to="/payment-list-user">
+
+              <button className=" btn-sm btn btn-secondary me-3">
+                Payment List
+              </button>
+            </Link>
+            <Link to="/kitchen-view">
+
+              <button className=" btn-sm btn btn-secondary me-3">
+                Kitchen
+              </button>
+            </Link>
+          </div> */}
         </div>
-        <div className="col-lg-6 d-flex justify-content-end">
-          {/* <Link to='/search-bill'>  <button className=' btn-sm btn btn-secondary me-3'> Search Bill </button></Link> */}
-          <Link to="/order-status">
-            {" "}
-            <button className=" btn-sm btn btn-secondary me-3">
-
-              Orders
-            </button>
-          </Link>
-          <Link to="/add-menus">
-
-            <button className=" btn-sm btn btn-secondary me-3">
-
-              Menu
-            </button>
-          </Link>
-          <Link to="/payment-list-user">
-
-            <button className=" btn-sm btn btn-secondary me-3">
-              Payment List
-            </button>
-          </Link>
-          <Link to="/kitchen-view">
-
-            <button className=" btn-sm btn btn-secondary me-3">
-
-              Kitchen
-            </button>
-          </Link>
-        </div>
-      </div>
-
-      <Form onSubmit={handleSubmit} onKeyPress={handleKeyPress}>
         <Row>
-          <Col md={6} lg={3}>
-            <Form.Group controlId="paymentMethod">
-              <Form.Label>Payment Method</Form.Label>
-              <Form.Control
-                as="select"
-                name="paymentMethod"
-                value={formData.paymentMethod}
-                onChange={handleChange}
-                className="custom-select"
-              >   <option value="" disabled>
-                  Select Payment Method
-                </option>
-                <option value="Cash">Cash</option>
-                <option value="Card">Card</option>
-              </Form.Control>
-            </Form.Group>
-          </Col>
-          {formData.paymentMethod === "Card" && (
-            // {result}
-            // <Scanner setResult={setResult} />
 
-            <Col md={6} lg={3}>
-
-              {/* <Form.Group controlId="cardNumber">
-                <Form.Label>Card Number</Form.Label>
-                <InputGroup className="mb-3">
-
-                  <Form.Control
-                    type="text"
-                    name="cardNumber"
-                    id="cardNumberIp"
-                    value={formData.cardNumber}
-                    onChange={handleChange}
-                    isInvalid={!!errors.cardNumber} style={{ border: 'none !important', outline: 'none', }}
-                  />
-                  <InputGroup.Text id="basic-addon2" className="  btn btn-primary">
-                    <Scanner setResult={setResult} />
-                  </InputGroup.Text>
-
-
-                </InputGroup>
-                <Form.Control.Feedback type="invalid">
-                  {errors.cardNumber}
-                </Form.Control.Feedback>
-              </Form.Group> */}
-              <Form.Group controlId="cardNumber" className="mb-3">
-                <Form.Label>Card Number</Form.Label>
-                <InputGroup >
-                  <Form.Control
-                    type="text"
-                    name="cardNumber"
-                    id="cardNumberIp"
-                    value={formData.cardNumber}
-                    onChange={handleChange}
-                    isInvalid={!!errors.cardNumber}
-                    style={{ border: 'none !important', outline: 'none' }}
-                  />
-                  <InputGroup.Text id="basic-addon2" className="btn btn-primary">
-                    <Scanner setResult={setResult} />
-                  </InputGroup.Text>
-                  {/* <Button color="primary" onClick={handleCheckButtonClick} className='ms-2'>Check</Button> Check Button */}
-                </InputGroup>
-                <Form.Control.Feedback type="invalid">
-                  {errors.cardNumber}
-                </Form.Control.Feedback>
-                {cardValidityMessage && (
-                  <span className={errors.cardNumber ? "text-danger" : "text-success"}>
-                    {cardValidityMessage}
-                  </span>
-                )}
-              </Form.Group>
-            </Col>
-          )}
-          {formData.paymentMethod === "Card" && (
-            <Col md={6} lg={3}>
-              <Form.Group controlId="mobileNumber">
-                <Form.Label>Mobile Number</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="mobileNumber"
-                  value={formData.mobileNumber || ""}
-                  onChange={handleChange}
-                  isInvalid={!!errors.mobileNumber}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.mobileNumber}
-                </Form.Control.Feedback>
-
-
-              </Form.Group>
-            </Col>
-          )}
-
-          {/* {formData.paymentMethod === 'Card' && ( */}
           <Col md={6} lg={3}>
             <Form.Group controlId="parcelRegular">
               <Form.Label>Dine-in / Takeout</Form.Label>
@@ -783,8 +610,27 @@ const OrderForm = () => {
             </Form.Group>
           </Col>
 
-          {/* )} */}
-          {formData.paymentMethod === "Card" && (
+          {(formData?.parcelRegular?.trim().toLowerCase() === "dine-in") && (
+            <Col md={6} lg={3}>
+              <Form.Group controlId="mobileNumber">
+                <Form.Label>Mobile Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="mobileNumber"
+                  value={formData.mobileNumber || ""}
+                  onChange={handleChange}
+                  isInvalid={!!errors.mobileNumber}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.mobileNumber}
+                </Form.Control.Feedback>
+
+
+              </Form.Group>
+            </Col>
+          )}
+          {(formData?.parcelRegular?.trim().toLowerCase() === "dine-in") && (
+
             <Col md={6} lg={3}>
               <Form.Group controlId="tableSelect">
                 <Form.Label>Select Tables</Form.Label>
@@ -794,13 +640,11 @@ const OrderForm = () => {
                     allowClear
                     style={{ width: "100%" }}
                     placeholder="Please select"
-                    value={formData.TableID}
-                    onChange={handleChange}
+                    value={formData?.TableID}
+                    onChange={handleTableChange}
                     options={tableOptions}
                   />
-
                 </Space>
-
               </Form.Group>
             </Col>
           )}
@@ -809,13 +653,7 @@ const OrderForm = () => {
           <div className="col-md-6">
             <h5 className='mb-0'>Add Product </h5>
           </div>
-
         </Row>
-        {/* <Row>
-          <Col>
-            <hr />{" "}
-          </Col>
-        </Row> */}
         {
           formData.products.map((product, index) => (
             <>
@@ -854,7 +692,8 @@ const OrderForm = () => {
                                 <p className="mb-0">
                                   {" "}
                                   {productResult.ProdName}{" "}
-                                  <b>({productResult.ProdCode})</b>
+                                  {/* <b>({productResult.ProdCode})</b> */}
+                                  {/* <b> - {productResult.ProdBarCode} </b> */}
                                 </p>
                               </div>
                               <div className="col-4">
@@ -931,43 +770,6 @@ const OrderForm = () => {
                   </Form.Group>
                 </Col>
 
-                {/* {billType === "gst" && formData.paymentMethod === "Cash" ? (
-                  <Col md={2} sm={6}>
-                    <Form.Group controlId={`gst-${index}`}>
-                      <Form.Label>GST %</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="gst"
-                        value={product.gst}
-                        onChange={(e) => handleProductChange(index, e)}
-                        min="0"
-                        isInvalid={errors[`gst-${index}`]}
-                        disabled
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors[`gst-${index}`]}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                ) : (
-                  <></>
-                )}
-
-                {billType === "gst" && formData.paymentMethod === "Cash" ? (
-                  <Col md={2} className="mb-2">
-                    <Form.Group controlId={`totalPriceWidGST-${index}`}>
-                      <Form.Label>Total (GST)</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="totalPriceWidGST"
-                        value={product.totalPriceWidGST }
-                        disabled
-                      />
-                    </Form.Group>
-                  </Col>
-                ) : (
-                  <></>
-                )} */}
                 {billType === "gst" && formData.paymentMethod === "Cash" && (
                   // <Row className="mb-3"> {/* Ensure they are in the same row */}
                   <Col xl={1} md={3} sm={6}>
@@ -1016,11 +818,6 @@ const OrderForm = () => {
                   </Button>
                 </Col>
               </Row>
-              {/* <div className="row">
-                <div className="col-12">
-                  <hr style={{ border: "0.5px solid #c8c8c8" }} />
-                </div>
-              </div> */}
             </>
           ))
         }
@@ -1030,7 +827,6 @@ const OrderForm = () => {
             <Button
               variant="primary"
               onClick={addProduct}
-              // className="mt-3"
               size="sm"
             >
               Add Product
@@ -1038,197 +834,22 @@ const OrderForm = () => {
           </Col>
         </Row>
 
-        <Row className="my-3">
-          {formData.paymentMethod === "Cash" && (
-            <Col md={4} className="mb-3">
-              <Form.Group controlId="billType">
-                <Form.Control
-                  as="select"
-                  name="billType"
-                  onChange={handleBillTypeChange}
-                  value={billType} // Bind the value to the state
-                  className="custom-select"
-                  placeholder="Select Bill Type"
-                >
-                  <option value="" disabled>
-                    Select Bill Type
-                  </option>
-                  <option value="estimation">Estimation Bill</option>
-                  <option value="gst">GST Bill</option>
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          )}
-          {formData.paymentMethod === "Cash" && (
-            <Col md={4} className="mb-3">
-              <Form.Group controlId="paymentMode">
-                <Form.Control
-                  as="select"
-                  name="paymentMode"
-                  onChange={handlepaymentMode}
-                  value={paymentMode}
-                  className="custom-select"
-                  placeholder="Select Payment Mode"
-                >
-                  <option value="" disabled selected>
-                    Select Payment Mode
-                  </option>
-                  <option value="Cash">Cash</option>
-                  <option value="UPI">UPI</option>
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          )}
-          {billType == "estimation" && formData.paymentMethod === "Cash" && (
-            <Col md={3}>
-              <ApplyCoupon
-                setDiscount={setDiscount}
-                setCouponCodeInOrder={setCouponCode}
-                overallTotal={overallTotalForCoupon}
-                couponCodeProp={couponCode}
-                refreshKey={refreshKey}
-              />
-            </Col>
-          )}
-
-        </Row>
-        {
-          billType === "estimation" && formData.paymentMethod === "Cash" ? (
-            <Row className="  d-flex justify-content-end">
-              <Col md={6}>
-                <table className="table table-borderless text-end">
-                  <tbody>
-                    <tr>
-                      <td className="py-2">
-                        <b>Discount </b>
-                      </td>
-                      <td className="py-2">{discount}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">
-                        <b>Total : </b>
-                      </td>
-                      <td className="py-2">
-                        ₹
-                        {calculateOverallTotalWithoutGst() === 0
-                          ? "0.00"
-                          : calculateOverallTotalWithoutGst().toFixed(2)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </Col>
-            </Row>
-          ) : formData.paymentMethod === "Cash" ? (
-            <Row className="mt-3 d-flex justify-content-end">
-              <Col md={6}>
-                <table className="table table-borderless text-end">
-                  <tbody>
-                    <tr>
-                      <td className="py-2">
-                        <b>SGST : </b>
-                      </td>
-                      <td className="py-2">
-                        ₹
-                        {calculateTotalGST() === 0
-                          ? "0.00"
-                          : (calculateTotalGST() / 2).toFixed(2)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">
-                        <b>CGST : </b>
-                      </td>
-                      <td className="py-2">
-                        ₹
-                        {calculateTotalGST() === 0
-                          ? "0.00"
-                          : (calculateTotalGST() / 2).toFixed(2)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">
-                        <b>Grand Total :</b>
-                      </td>
-                      <td className="py-2">
-                        ₹{calculateOverallTotal().toFixed(2)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </Col>
-            </Row>
-          ) : null
-        }
 
         <Row className="d-flex align-items-end">
           <Col md={5} className="d-flex align-items-end justify-content-start">
             <Button
               variant="success"
-              type="submit" disabled={orderPlaced}
+              type="submit"
               className="mt-3"
               style={{ width: "50%" }}
             >
-              {orderPlaced ? "Order Placed" : "Submit Order"}
+              Submit Order
             </Button>
-
-
-
-
           </Col>
         </Row>
 
-        {/* <div
-          id="bill-content"
-          ref={printRef}
-
-        >
-
-          <div id="bill-content" ref={printRef}>
-            <p>  <b> MG FOOD COURT </b> <br />  {formattedDateTime} <br />
-              <b>   Token No</b>  <br />
-              <h2 >{tokenNo}</h2>
-            </p>
-          </div>
-        </div> */}
-
-        <div className="row">
-          <div className="col-12 d-flex justify-content-center mb-4">
-
-            <div>
-              {/* <div ref={printRef}>  
-                <div id="bill-content" className='text-center'> 
-                  <p > <b style={{ marginBottom: '10px' }}>MG FOOD COURT</b> <br /> {formattedDateTime} <br />
-                    <b>Token No</b> <br />
-                    <h2>{tokenNo}</h2>
-                  </p>
-                </div>
-              </div> */}
-              <div className='mt-5'>
-                <div ref={printRef}>
-                  {tokenNo && (
-                    <div id="bill-content" className="text-center">
-                      <p>
-                        <b style={{ marginBottom: '10px' }}>MG FOOD COURT</b> <br />
-                        {formattedDateTime} <br />
-                        <b>Token No</b> <br />
-                        <h2>{tokenNo}</h2>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-
-              {formData.paymentMethod === "Cash" && orderData && (
-                <PrintBillOrder orderData={orderData} />
-              )}</div>
-          </div>
-        </div>
-
-
-
       </Form >
+
     </>
   );
 };

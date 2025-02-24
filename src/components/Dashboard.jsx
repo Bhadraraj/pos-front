@@ -20,7 +20,7 @@ const Dashboard = () => {
       formData.append("start_date", startDate || new Date().toISOString().split("T")[0]);
       formData.append("end_date", endDate || new Date().toISOString().split("T")[0]);
   
-      const response = await axios.post("https://devpos.ideauxbill.in/api/dashboard", formData, {
+      const response = await axios.post(`{BASE_URL}/api/dashboard`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

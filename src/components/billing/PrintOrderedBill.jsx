@@ -161,10 +161,10 @@ const PrintOrderedBill = () => {
       return 0;
     }
   };
-  const handlePaymentTypeChange = (e) => {
-    setBillPayment(e.target.value);
-    console.log("Payment Method  " + e.target.value)
-  };
+  // const handlePaymentTypeChange = (e) => {
+  //   setBillPayment(e.target.value);
+  //   console.log("Payment Method  " + e.target.value)
+  // };
 
 
   const overallTotalForCoupon = calculateOverallTotalWithoutDiscount(orderData);
@@ -531,9 +531,9 @@ const PrintOrderedBill = () => {
               </div>
             </div>
             <Row>
-              {billno === null || billno === "N/A" ? ( // Check if billNo is null or "N/A"
-                <> {/* Wrap the columns in a Fragment if needed */}
-                  {orderData?.OrderPaymentStatus !== 'Paid' && (
+              {billno === null || billno === "N/A" ? ( 
+                <> 
+                  {/* {orderData?.OrderPaymentStatus !== 'Paid' && (
                     <Col md={6} className='mb-3'>
                       <Form.Group controlId="billPayment">
                         <Form.Control
@@ -550,29 +550,29 @@ const PrintOrderedBill = () => {
                         </Form.Control>
                       </Form.Group>
                     </Col>
-                  )}
+                  )} */}
 
-                  {orderData?.OrderPaymentStatus !== 'Paid' && (
+                  {/* {orderData?.OrderPaymentStatus !== 'Paid' && (
                     <Col md={6} className="mb-3">
-                      <Form.Group controlId="billPaymentType"> {/* Give a more specific ID */}
+                      <Form.Group controlId="billPaymentType">
                         <Form.Control
                           as="select"
-                          name="billPaymentType" // More descriptive name
+                          name="billPaymentType" 
                           onChange={handlePaymentTypeChange}
                           value={billPayment}
-                          disabled={billno} // Disable if billNo is present
-                          isInvalid={!!errors.billPaymentType} // Use billPaymentType for errors
+                          disabled={billno} 
+                          isInvalid={!!errors.billPaymentType}  
                         >
                           <option value="" disabled>Select Payment</option>
                           <option value="Cash">Cash</option>
                           <option value="UPI">UPI</option>
                         </Form.Control>
                         <Form.Control.Feedback type="invalid">
-                          {errors.billPaymentType} {/* Use billPaymentType for errors */}
+                          {errors.billPaymentType}  
                         </Form.Control.Feedback>
                       </Form.Group>
                     </Col>
-                  )}
+                  )} */}
 
                   {orderData?.OrderPaymentStatus !== 'Paid' && (
                     <Col md={12} className="mb-3">

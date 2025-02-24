@@ -3,8 +3,4 @@
 // export const BASE_URL = 'https://devpos.ideauxbill.in';
 // export const BASE_URL = 'http://127.0.0.1:8000'; 
 // export const BASE_URL = 'https://pos.ideauxbill.in'; 
-export const BASE_URL = 'https://devpos.ideauxbill.in'; 
-// 
-// Client bACKEND
-
-// 
+export const BASE_URL = 'https://devpos.ideauxbill.in';  

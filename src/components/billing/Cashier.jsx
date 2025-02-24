@@ -29,62 +29,40 @@ const OrderList = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [allOrders, setAllOrders] = useState([]);
+
 
   const ordersPerPage = 5; // Adjust based on your needs
+  const handlePaymentStatusChange = async (event, orderId) => {
 
-  // const handleViewModalPrint = () => {
-  //   const printContents = `
-  //   <div style=" 
-  //     width: 80mm; 
-  //     padding: 5mm; 
-  //     box-sizing: border-box; 
-  //     font-family: Arial, sans-serif; 
-  //     font-size: 12px; 
-  //     line-height: 1.5; 
-  //     margin: 0 auto; /* Center the div */
-  //     text-align: center; /* Align content inside the div to the center */
-  //   ">
-  //     ${document.getElementById("kitchen_bill").innerHTML}
-  //   </div>
-  // `;
+    try {
+      const newStatus = event.target.value;
 
-  //   const originalStyles = Array.from(document.styleSheets)
-  //     .map((styleSheet) => {
-  //       try {
-  //         return Array.from(styleSheet.cssRules)
-  //           .map((rule) => rule.cssText)
-  //           .join("");
-  //       } catch (e) {
-  //         return "";
-  //       }
-  //     })
-  //     .join("");
-  //   const iframe = document.createElement("iframe");
-  //   document.body.appendChild(iframe);
-  //   iframe.style.position = "absolute";
-  //   iframe.style.width = "0";
-  //   iframe.style.height = "0";
-  //   iframe.style.border = "none";
+      const response = await axios.post(
+        `${BASE_URL}/api/updatePaymentStatus`,
+        {
+          orderid: orderId,
+          status: newStatus,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-  //   const doc = iframe.contentWindow.document;
-  //   doc.open();
-  //   doc.write(`
-  //       <html>
-  //         <head>
-  //           <style>${originalStyles}</style>
-  //         </head>
-  //         <body>${printContents}</body>
-  //       </html>
-  //     `);
-  //   doc.close();
-  //   iframe.contentWindow.focus();
-  //   iframe.contentWindow.print();
-  //   iframe.contentWindow.onafterprint = () => {
-  //     document.body.removeChild(iframe);
-  //   };
-  // };
+      if (response.status === 200) {
+        alert("Payment status updated successfully");
+        fetchOrders()
+      } else {
+        alert("Error updating payment status");
+      }
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
 
-  // const [loading, setLoading] = useState(false);
   const handlePrintCash = async (order) => {
     setLoading(true);
     try {
@@ -95,6 +73,7 @@ const OrderList = () => {
 
       if (response.data.status === "success") {
         const orderData = response.data.orders;
+        // const orderData = response.data.orders;
         // Navigate to print-bill with orderData
         window.location.href = `/print-bill?data=${encodeURIComponent(
           JSON.stringify(orderData)
@@ -116,6 +95,7 @@ const OrderList = () => {
 
 
   const handlePrintCard = async (order) => {
+
     setLoading(true);
     try {
       const response = await axios.post(
@@ -233,6 +213,7 @@ const OrderList = () => {
     }
   };
 
+
   const fetchOrders = async (
     page = 1,
     status = "",
@@ -242,7 +223,11 @@ const OrderList = () => {
   ) => {
     try {
       const formData = new FormData();
+      formData.append("page", page);
 
+      if (searchTerm) {
+        formData.append("billno", searchTerm); // Or whichever field is relevant
+      }
       // ✅ Apply filtering logic
       if (status && status !== "All") {
         formData.append("orderstatus", status);
@@ -259,37 +244,38 @@ const OrderList = () => {
       }
       formData.append("page", page);
 
-      // ✅ API Request
       const response = await axios.post(`${BASE_URL}/api/allorderlist`, formData);
-      console.log("API Response:", response.data); // Debugging output
+      console.log("API Response:", response.data);
 
-      // ✅ Handle Response
       if (response.data.status === "success" && Array.isArray(response.data.orders)) {
-        setOrders(response.data.orders); // Directly set orders
-        setFilteredOrders(response.data.orders);
+        const OrdersLst = response.data.orders.filter(order => order.OrderPaymentStatus === "NotPaid");
+        setAllOrders(OrdersLst); // Set all orders received from the API
+        // setAllOrders(response.data.orders); // Set all orders received from the API
+        applyFilters(OrdersLst, searchTerm, status, payStatus, orderBillStatus, parcelType);
+        setPagination(response.data.pagination || {});
       } else {
         console.log("No orders found in API response");
+        setAllOrders([]);
         setFilteredOrders([]);
+        setPagination({});
       }
+
     } catch (error) {
       console.error("Error fetching orders:", error);
+      setAllOrders([]);
       setFilteredOrders([]);
+      setPagination({});
+    } finally {
+      setLoading(true);
     }
   };
-
   // Ensure filteredOrders is an array before using slice()
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = Array.isArray(filteredOrders)
-    ? filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder)
-    : [];
+  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder); // No need for conditional check here anymore
 
-
-
-  // const handleViewProduct = (order) => {
-  //   setSelectedOrder(order);
-  //   setShowViewModal(true);
-  // };
+  console.log("Filtered Orders:", filteredOrders);
+  console.log("Current Orders (Paginated):", currentOrders);
 
 
   const handleViewProduct = async (order) => {
@@ -298,11 +284,8 @@ const OrderList = () => {
       const response = await axios.post(
         `${BASE_URL}/api/ordersearch?billid=${order.OrderID}`
       );
-
-
       if (response.data.status === "success") {
         const orderData = response.data.orders;
-        // Navigate to print-bill with orderData
         window.location.href = `/print-kitchen-bill?data=${encodeURIComponent(
           JSON.stringify(orderData)
         )}`;
@@ -315,9 +298,6 @@ const OrderList = () => {
     } finally {
       setLoading(false);
     }
-
-
-
 
   };
 
@@ -372,27 +352,14 @@ const OrderList = () => {
     }
   };
 
-  const handlePageChange = async (page) => {
-    if (page < 1 || page > pagination.total_pages) return;
+  const handlePageChange = (page) => {
     setCurrentPage(page);
-
-    if (orderStatus) {
-      await fetchOrders(page, orderStatus);
-    } else if (orderPayStatus) {
-      await fetchOrders(page, "", orderPayStatus);
-    } else if (orderBillStatus) {
-      await fetchOrders(page, "", "", orderBillStatus);
-    } else {
-      await fetchOrders(page); // Fetch all orders if no filters are applied
-    }
   };
 
   const handleEditProduct = (order) => {
     navigate("/update-order", {
       state: { billNo: order.OrderBillNo, orderId: order.OrderID },
     });
-
-    // navigate('/update-order', { state: { billNo: order.OrderBillNo } }); // Use navigate with state
   };
 
   const getBadgeClass = (status) => {
@@ -410,33 +377,56 @@ const OrderList = () => {
     }
   };
 
-  // Function to directly send the scanned data as searchTerm
-  // Function to handle the scanned QR result and update the searchTerm
   const setResult = async (data) => {
     setSearchTerm(data); // Set the scanned result as input value
     await handleSearchChange(data); // Send scanned result as searchTerm to API
   };
 
-  const handleSearchChange = async (searchTerm) => {
-    const formattedSearchTerm = searchTerm.toLowerCase().trim();
-    const formData = new FormData();
-    formData.append("billno", formattedSearchTerm); // Assuming 'billno' is the search field
 
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/allorderlist`,
-        formData
-      );
-      if (response.data.status === "success") {
-        setFilteredOrders(response.data.orders.data);
-        setPagination(response.data.pagination);
-      } else {
-        console.log("No orders found");
-        setFilteredOrders([]);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
+  const handleSearchChange = (searchTerm) => {
+    setSearchTerm(searchTerm);
+    setCurrentPage(1); // Reset to first page
+    applyFilters(allOrders, searchTerm, orderStatus, orderPayStatus, orderBillStatus, orderParcelRegular); // Apply filters
+  };
+  ;
+  const applyFilters = (orders, searchTerm, status, payStatus, orderBillStatus, parcelType) => {
+    let filtered = [...orders];
+
+    if (searchTerm) {
+      const trimmedSearchTerm = searchTerm.toLowerCase().trim();
+
+      filtered = filtered.filter(order => {
+        const orderRefNo = order.OrderRefNo ? order.OrderRefNo.toLowerCase() : "";
+        const orderCardNumber = order.OrderCardNumber ? order.OrderCardNumber.toLowerCase() : "";
+        const orderCustMobileNo = order.OrderCustMobileNo ? order.OrderCustMobileNo.toLowerCase() : "";
+        const orderTableNumber = order.OrderTableNumber ? order.OrderTableNumber.toLowerCase() : ""; // Add table number
+
+        return (
+          orderRefNo.includes(trimmedSearchTerm) ||
+          orderCardNumber.includes(trimmedSearchTerm) ||
+          orderCustMobileNo.includes(trimmedSearchTerm) ||
+          orderTableNumber.includes(trimmedSearchTerm) // Include table number in search
+        );
+      });
     }
+
+    if (status && status !== "All") {
+      filtered = filtered.filter(order => order.OrderStatus === status);
+    }
+
+    if (payStatus && payStatus !== "All") {
+      filtered = filtered.filter(order => order.OrderPaymentStatus === payStatus);
+    }
+
+    if (orderBillStatus && orderBillStatus !== "All") {
+      filtered = filtered.filter(order => order.OrderBillType === orderBillStatus);
+    }
+
+    if (parcelType && parcelType !== "All") {
+      filtered = filtered.filter(order => order.OrderParcelRegular === parcelType);
+    }
+
+    setFilteredOrders(filtered);
   };
 
   const handleDeleteProduct = async (orderID) => {
@@ -544,7 +534,7 @@ const OrderList = () => {
     <div>
       <Row className="mb-3">
         <Col md={6}>
-          <h3>Billing</h3>
+          <h3>Billing </h3>
         </Col>
         <Col md={6} className="d-flex justify-content-end align-items-center">
           <button className="btn btn-sm btn-dark" onClick={goBack}>
@@ -562,7 +552,7 @@ const OrderList = () => {
               <Form.Control
                 type="text"
                 id="cardNumberIp"
-                placeholder="Search by Order ID / Bill No / Mobile Number"
+                placeholder="Search by Bill No / Mobile Number"
                 className="form-control"
                 value={searchTerm}
                 onChange={(e) => {
@@ -575,41 +565,6 @@ const OrderList = () => {
                 <Scanner setResult={setResult} />
               </InputGroup.Text>
             </InputGroup>
-
-          </Form.Group>
-
-        </Col>
-
-        <Col lg={2} className="mb-2">
-          <Form.Group controlId="orderStatusFilter">
-            <Form.Label>Paid / Not Paid </Form.Label>
-            <Form.Control
-              as="select"
-              value={orderPayStatus}
-              onChange={filterPayStatus}
-            >
-              <option value="All">All</option>
-              <option value="Paid">Paid</option>
-              <option value="NotPaid">Not Paid</option>
-            </Form.Control>
-          </Form.Group>
-        </Col>
-
-
-
-        <Col lg={2} className="mb-2">
-          <Form.Group controlId="orderBillStatusFilter">
-            <Form.Label> Bill Type</Form.Label>
-            <Form.Control
-              as="select"
-              value={orderBillStatus}
-              onChange={filterBillStatus}
-            >
-              <option value="">Select Bill Type</option>
-              <option value="All">All</option>
-              <option value="estimation">Estimation</option>
-              <option value="gst">GST</option>
-            </Form.Control>
           </Form.Group>
         </Col>
       </Row>
@@ -617,16 +572,16 @@ const OrderList = () => {
         <Table bordered hover responsive className="overAllOrderListing">
           <thead>
             <tr>
-
-              <th className="text-nowrap">Order Bill No</th>
-
-              <th className="text-nowrap">Payment Status</th>
               <th className="text-nowrap">Order Date</th>
+              <th className="text-nowrap">Order Bill No</th>
+              <th className="text-nowrap">Table No</th>
+              <th className="text-nowrap">Payment Status</th>
+
               <th className="text-nowrap">Card Number</th>
               <th className="text-nowrap">Bill Type</th>
 
               <th className="text-nowrap">Mobile Number</th>
-              <th className="text-nowrap">Payment Method</th>
+              <th className="text-nowrap">Order Type</th>
               <th>Status</th>
 
               <th className="text-nowrap">Total Amount</th>
@@ -638,15 +593,32 @@ const OrderList = () => {
             {currentOrders.length > 0 ? (
               currentOrders.map((order, index) => (
                 <tr key={order.OrderID}>
-                  <td className="text-nowrap">{order.OrderRefNo}</td>
-
-                  <td>{order.OrderPaymentStatus}</td>
                   <td className="text-nowrap">{order.OrderDate}</td>
+                  <td className="text-nowrap">{order.OrderRefNo}</td>
+                  <td>{order.OrderTableNo}</td>
+                  <td>{order.OrderPaymentStatus}</td>
+
                   <td>{order.OrderCardNumber}</td>
                   <td>{order.OrderBillType}</td>
 
                   <td>{order.OrderCustMobileNo}</td>
                   <td>{order.OrderPaymentMethod}</td>
+                  <td> <Col md={12} className='mb-3'>
+                    <Form.Group controlId="billPayment">
+                      <Form.Control
+                        as="select"
+                        name="billPayment"
+                        onChange={(e) => handlePaymentStatusChange(e, order.OrderID)}
+
+                        className="custom-select"
+                        placeholder="Select Paid"
+                      >
+                        <option disabled selected> Update Payment  </option>
+                        <option value="NotPaid" className="text-danger">Not Paid</option>
+                        <option value="Paid" className="text-success">Paid</option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Col></td>
                   <td>
                     <span
                       className={`badge ${getBadgeClass(order.OrderStatus)}`}
@@ -654,31 +626,22 @@ const OrderList = () => {
                       {order.OrderStatus}
                     </span>
                   </td>
-
                   <td>{order.OrderOverallTotalWithoutGst}</td>
 
                   <td>
                     <div className="row  ">
                       <div className="col-12 d-flex justify-content-evenly align-items-center">
 
-
-
-                        <div
-                          onClick={() => handleViewProduct(order)}
-                          className="view-button me-2"
-                        >
-                          <FaEye />
+                        {/* {order.OrderPaymentMethod == "Cash" ? ( */}
+                        {/* <div onClick={() => handlePrintCash(order)} className="print-button me-2">
+                            <IoPrint />
+                          </div> */}
+                        {/* ) : (<> </>)} */}
+                        {/* {order.OrderPaymentMethod == "Card" ? ( */}
+                        <div onClick={() => handlePrintCard(order)} className="print-button me-2">
+                          <IoPrint />
                         </div>
-                        {order.OrderPaymentMethod == "Cash" ? (
-                          <div onClick={() => handlePrintCash(order)} className="print-button me-2">
-                            <IoPrint />
-                          </div>
-                        ) : (<> </>)}
-                        {order.OrderPaymentMethod == "Card" ? (
-                          <div onClick={() => handlePrintCard(order)} className="print-button me-2">
-                            <IoPrint />
-                          </div>
-                        ) : (<> </>)}
+                        {/* ) : (<> </>)} */}
 
 
 
@@ -787,26 +750,27 @@ const OrderList = () => {
         >
           Previous
         </button>
-        {[...Array(pagination.total_pages)].map((_, index) => (
+
+        {[...Array(Math.ceil(filteredOrders.length / ordersPerPage))].map((_, index) => (
           <button
             key={index + 1}
-            className={`btn ${currentPage === index + 1
-              ? "btn-primary"
-              : "btn-outline-secondary"
-              } mx-1`}
+            className={`btn ${currentPage === index + 1 ? "btn-primary" : "btn-outline-secondary"} mx-1`}
             onClick={() => handlePageChange(index + 1)}
           >
             {index + 1}
           </button>
         ))}
+
         <button
           className="btn btn-outline-secondary"
-          disabled={currentPage === pagination.total_pages}
+          disabled={currentPage === Math.ceil(filteredOrders.length / ordersPerPage)}
           onClick={() => handlePageChange(currentPage + 1)}
         >
           Next
         </button>
       </div>
+
+
     </div>
   );
 };
